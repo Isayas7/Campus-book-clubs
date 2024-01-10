@@ -7,28 +7,30 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useContext, useState } from "react";
-import Container from "../../../components/container/Container";
-import CustomTextInput from "../../../components/TextInput/CustomTextInput";
 import { useForm } from "react-hook-form";
-import Colors from "../../../constants/Colors";
-import CustomText from "../../../components/Text/CustomText";
-import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
   widthPercentageToFonts as wf,
   heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
-import { router } from "expo-router";
-import { AuthContext } from "../../../context/AuthContext";
+import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { clubProps } from "../../../types/types";
-import { ImageViewer } from "../../../components/ImageViewer/ImageViewer";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../firebaseConfig";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { AuthContext } from "../../../../context/AuthContext";
+import { clubProps } from "../../../../types/types";
+import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../../firebaseConfig";
+import Container from "../../../../components/container/Container";
+import CustomText from "../../../../components/Text/CustomText";
+import CustomTextInput from "../../../../components/TextInput/CustomTextInput";
+import { ImageViewer } from "../../../../components/ImageViewer/ImageViewer";
+import CustomTouchableOpacity from "../../../../components/TouchableOpacity/CustomTouchableOpacity";
+import Colors from "../../../../constants/Colors";
+import { ScrollView } from "react-native-gesture-handler";
 
-const CreateClub = () => {
+const ScheduleDiscussion = () => {
+  const { sechedule: id } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
   const { control, handleSubmit } = useForm<clubProps>();
 
@@ -97,26 +99,42 @@ const CreateClub = () => {
   };
 
   return (
-    <View style={styles.wrapper}>
+    <ScrollView showsVerticalScrollIndicator={false} style={styles.wrapper}>
       <Container style={styles.container}>
         <View>
-          <CustomText style={styles.text}>Club name</CustomText>
+          <CustomText style={styles.text}>Book title</CustomText>
           <CustomTextInput
-            placeholder="Enter club name"
+            placeholder="Enter book title for discussion"
             control={control}
             name="clubName"
           ></CustomTextInput>
         </View>
         <View>
-          <CustomText style={styles.text}>About</CustomText>
+          <CustomText style={styles.text}>Book Auther</CustomText>
           <CustomTextInput
-            placeholder="Write about your club"
+            placeholder="Enter Book Auther"
             control={control}
             name="about"
           ></CustomTextInput>
         </View>
         <View>
-          <CustomText style={styles.text}>Picture</CustomText>
+          <CustomText style={styles.text}>Day</CustomText>
+          <CustomTextInput
+            placeholder="Enter day of the discussion"
+            control={control}
+            name="about"
+          ></CustomTextInput>
+        </View>
+        <View>
+          <CustomText style={styles.text}>Time</CustomText>
+          <CustomTextInput
+            placeholder="Enter start time of the discussion"
+            control={control}
+            name="about"
+          ></CustomTextInput>
+        </View>
+        <View>
+          <CustomText style={styles.text}>Book pdf</CustomText>
           <TouchableOpacity onPress={pickImageAsync}>
             <ImageViewer selectedImage={selectedImage} />
           </TouchableOpacity>
@@ -126,11 +144,11 @@ const CreateClub = () => {
           {loading ? (
             <ActivityIndicator style={{ padding: 5 }} />
           ) : (
-            <CustomText>Create</CustomText>
+            <CustomText>Schedule</CustomText>
           )}
         </CustomTouchableOpacity>
       </Container>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -142,7 +160,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 20,
-    marginTop: hp("5%"),
+    marginTop: hp("3%"),
   },
   image: {
     height: hp("13%"),
@@ -154,4 +172,4 @@ const styles = StyleSheet.create({
     color: Colors.background,
   },
 });
-export default CreateClub;
+export default ScheduleDiscussion;

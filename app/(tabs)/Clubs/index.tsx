@@ -68,7 +68,7 @@ const Clubs = () => {
       ? { uri: photoUrl }
       : require("../../../assets/images/book1.jpg");
     return (
-      <Link key={item.id} href={`/${item.id}`} asChild>
+      <Link key={item.id} href={`/message/${item.id}`} asChild>
         <TouchableOpacity style={styles.books}>
           <Image source={imageSource} style={styles.image} />
           <View style={styles.booksDesc}>

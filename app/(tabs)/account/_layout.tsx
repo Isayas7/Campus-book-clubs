@@ -18,6 +18,14 @@ const Layout = () => {
       }}
     >
       <Stack.Screen name="index" options={{}} />
+      <Stack.Screen
+        name="[discussionList]"
+        options={{ headerTitle: "Discussion List" }}
+      />
+      <Stack.Screen
+        name="schedule/[schedule]"
+        options={{ headerTitle: "Schedule" }}
+      />
     </Stack>
   );
 };

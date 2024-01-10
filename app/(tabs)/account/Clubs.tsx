@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
@@ -19,10 +20,8 @@ import {
 import Colors from "../../../constants/Colors";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import ImageCard from "../../../components/imageCard/ImageCard";
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
-import { data } from "../home";
 import { AuthContext } from "../../../context/AuthContext";
 import {
   DocumentData,
@@ -39,6 +38,7 @@ interface ClubType {
   url: string;
   clubName: string;
   photoURL: string[];
+  members: string[];
 }
 
 const Clubs = () => {
@@ -65,62 +65,93 @@ const Clubs = () => {
     return () => unsubscribe();
   }, []);
 
-  const keyExtractor = (item: ClubType, index: number) => item.id.toString();
-  const numColumns = 3;
-
-  const renderVerticalItem = ({ item }: { item: ClubType }) => {
-    const columnWidth = wp(100) / numColumns - 10;
-    return (
-      <TouchableOpacity
-        onPress={() => router.push(`/(tabs)/account/${item.id}`)}
-      >
-        <View
-          style={{
-            width: columnWidth,
-            marginHorizontal: 5,
-            justifyContent: "center",
-          }}
-        >
-          <Image style={styles.image} source={{ uri: item.url }} />
-          <CustomText size="small" style={styles.text}>
-            {item.clubName}
-          </CustomText>
-        </View>
-      </TouchableOpacity>
-    );
-  };
   const clubItems = clubs.map((club) => ({
     id: club.id,
     url: club.photoURL,
     clubName: club.clubName,
+    members: club.members,
   }));
+
   const validClubItems = clubItems ? [...clubItems].reverse() : [];
+
+  const keyExtractor = (item: ClubType, index: number) => item.id.toString();
+
+  const renderVerticalItem = ({ item }: { item: ClubType }) => {
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: "white",
+          padding: 10,
+          borderRadius: 10,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push(`/message/${item.id}`)}
+          style={styles.books}
+        >
+          <Image source={{ uri: item?.url }} style={styles.groupImage} />
+          <View style={styles.booksDesc}>
+            <CustomText variant="black" size="medium" style={styles.title}>
+              {item?.clubName}
+            </CustomText>
+
+            <Text style={styles.bookAuther}>
+              {item?.members?.length} members
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <View style={{ display: "flex", gap: 10, marginRight: 10 }}>
+          <MaterialIcons
+            name="schedule"
+            size={24}
+            color="green"
+            onPress={() => router.push(`/(tabs)/account/${item.id}`)}
+          />
+          <Entypo name="edit" size={24} color="blue" />
+          <AntDesign name="delete" size={24} color="red" />
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.wrapper}>
-      <Container style={styles.continer}>
-        <View style={styles.row}>
-          <CustomText style={styles.text}>Create Club</CustomText>
-          <CustomTouchableOpacity
-            variant="secondary"
-            onPress={() => router.push("/(tabs)/account/CreateClub")}
-          >
-            <Ionicons name="add-outline" size={24} color={Colors.background} />
-          </CustomTouchableOpacity>
-        </View>
+      <View style={styles.continer}>
+        <Container style={styles.continer}>
+          <View style={styles.row}>
+            <CustomText style={styles.text}>Create Club</CustomText>
+            <CustomTouchableOpacity
+              variant="secondary"
+              onPress={() => router.push("/(tabs)/account/CreateClub")}
+            >
+              <Ionicons
+                name="add-outline"
+                size={24}
+                color={Colors.background}
+              />
+            </CustomTouchableOpacity>
+          </View>
+        </Container>
 
         <View style={styles.spareter} />
-
-        <CustomFlatList
-          style={{ marginBottom: 74 }}
-          data={validClubItems}
-          renderItem={renderVerticalItem}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={keyExtractor}
-          numColumns={numColumns}
-          contentContainerStyle={styles.flatListContainer}
-        />
-      </Container>
+        <Container style={{ marginBottom: hp("25%") }}>
+          {loading ? (
+            <ActivityIndicator size={"large"} />
+          ) : (
+            <CustomFlatList
+              data={validClubItems}
+              renderItem={renderVerticalItem}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={keyExtractor}
+              contentContainerStyle={styles.flatListContainer}
+            />
+          )}
+        </Container>
+      </View>
     </View>
   );
 };
@@ -152,7 +183,37 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   flatListContainer: {
+    gap: 10,
+  },
+  cardContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    position: "relative",
+    alignItems: "center",
+  },
+  books: {
+    flexDirection: "row",
     gap: 20,
+
+    borderRadius: 5,
+  },
+
+  booksDesc: {
+    display: "flex",
+    justifyContent: "center",
+    // gap: 2,
+  },
+  title: {
+    textAlign: "left",
+  },
+
+  bookAuther: {
+    fontFamily: "poppins-regular",
+  },
+  groupImage: {
+    height: wp("19%"),
+    width: wp("19%"),
+    borderRadius: 10,
   },
 });
 

@@ -36,10 +36,19 @@ export type ClubData = {
   creater: string;
   members: string[];
   photoURL: string;
-  // Add other properties if needed
+  from: string;
 };
 
 export type userProps = {
   photoUrl: string[];
   userName: string;
+};
+
+export type discussionTypes = {
+  id: string;
+  bookAuther: string;
+  bookTitle: string;
+  creater: string;
+  day: string;
+  startTime: string;
 };

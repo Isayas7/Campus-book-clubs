@@ -91,7 +91,7 @@ const Settings = () => {
 
           <Pressable
             style={styles.list}
-            onPress={() => router.push("/account/Clubs")}
+            onPress={() => router.push("/(tabs)/account/clubs")}
           >
             <MaterialIcons
               name="people-outline"
@@ -123,7 +123,7 @@ const Settings = () => {
             <AntDesign name="logout" size={24} color={Colors.newColor} />
 
             {loading ? (
-              <ActivityIndicator />
+              <ActivityIndicator style={styles.text} />
             ) : (
               <CustomText style={styles.text}>Logout</CustomText>
             )}

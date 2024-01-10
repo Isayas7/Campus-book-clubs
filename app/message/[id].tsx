@@ -16,7 +16,7 @@ import React, {
 } from "react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { FlatList, TextInput } from "react-native-gesture-handler";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import {
   DocumentData,
   addDoc,
@@ -30,9 +30,9 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { FIRBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
-import Colors from "../constants/Colors";
-import MessageHeader from "../components/MessageHeader";
+import { FIRBASE_DB, FIREBASE_AUTH } from "../../firebaseConfig";
+import Colors from "../../constants/Colors";
+import MessageHeader from "../../components/MessageHeader";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import {
   widthPercentageToDP as wp,
@@ -40,9 +40,10 @@ import {
   widthPercentageToFonts as wf,
   heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
-import CustomText from "../components/Text/CustomText";
-import { ClubData } from "../types/types";
+import CustomText from "../../components/Text/CustomText";
+import { ClubData } from "../../types/types";
 import { Keyboard } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Message = () => {
   const { user } = useContext(AuthContext);
@@ -56,6 +57,15 @@ const Message = () => {
 
   const flatListRef = useRef<FlatList | null>(null);
 
+  const storeData = async () => {
+    try {
+      await AsyncStorage.setItem("@ClubId", `${id}`);
+      console.log("Data stored successfully!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+
   /// Fetch new messages
   useEffect(() => {
     setMessageLoading(true);
@@ -68,6 +78,7 @@ const Message = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      storeData();
       setMessages(data);
     });
 
@@ -157,7 +168,10 @@ const Message = () => {
           header: () => (
             <MessageHeader
               name={clubs?.clubName}
-              members={clubs?.members?.length}
+              members={clubs?.members}
+              from="message"
+              id={clubs?.creater}
+              clubsId={clubs?.id}
             />
           ),
         }}

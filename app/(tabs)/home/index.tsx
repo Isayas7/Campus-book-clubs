@@ -166,9 +166,9 @@ export const data: RandomData[] = [
 const Home = () => {
   const { isLoading, authenticated } = useContext(AuthContext);
 
-  if (!authenticated) {
-    return <Redirect href="/login" />;
-  }
+  // if (!authenticated) {
+  //   return <Redirect href="/login" />;
+  // }
 
   if (isLoading)
     return (
