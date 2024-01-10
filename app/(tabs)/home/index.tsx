@@ -6,7 +6,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   widthPercentageToDP as wp,
@@ -16,7 +16,6 @@ import {
 } from "react-native-responsive-screen-font";
 import { StyleSheet } from "react-native";
 import Colors from "../../../constants/Colors";
-import { RandomData } from "../../../types/types";
 import Container from "../../../components/container/Container";
 import CustomTextInput from "../../../components/TextInput/CustomTextInput";
 import CustomText from "../../../components/Text/CustomText";
@@ -24,153 +23,35 @@ import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import { Redirect, router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { AuthContext } from "../../../context/AuthContext";
-
-export const data: RandomData[] = [
-  {
-    id: 1,
-    name: "Bianca Hobbs",
-    phone: "(427) 690-7565",
-    email: "imperdiet@outlook.net",
-    region: "Kirovohrad oblast",
-    country: "Belgium",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 2,
-    name: "Nolan Hill",
-    phone: "1-292-448-3486",
-    email: "blandit.mattis@aol.net",
-    region: "Sląskie",
-    country: "United States",
-    image: require("../../../assets/images/book3.jpg"),
-  },
-  {
-    id: 3,
-    name: "Alfreda Leonard",
-    phone: "1-632-333-3456",
-    email: "mollis.vitae@outlook.org",
-    region: "Cordillera Administrative Region",
-    country: "United Kingdom",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 4,
-    name: "Cairo Mann",
-    phone: "1-316-788-6768",
-    email: "proin@protonmail.ca",
-    region: "Antwerpen",
-    country: "China",
-    image: require("../../../assets/images/book3.jpg"),
-  },
-  {
-    id: 5,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 6,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 7,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 8,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 9,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 10,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 11,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 12,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 13,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 14,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-  {
-    id: 15,
-    name: "Alyssa Mueller",
-    phone: "1-142-727-5041",
-    email: "auctor@icloud.org",
-    region: "Västra Götalands län",
-    country: "France",
-    image: require("../../../assets/images/book1.jpg"),
-  },
-];
+import { DocumentData, collection, onSnapshot } from "firebase/firestore";
+import { FIRBASE_DB } from "../../../firebaseConfig";
+import { bookType } from "../../../types/types";
 
 const Home = () => {
   const { isLoading, authenticated } = useContext(AuthContext);
+  const { control } = useForm();
+  const [books, setBooks] = useState();
+  const [loading, setLoading] = useState(true);
 
   // if (!authenticated) {
   //   return <Redirect href="/login" />;
   // }
 
-  if (isLoading)
+  useEffect(() => {
+    const docRef = collection(FIRBASE_DB, "Books");
+
+    const unsubscribe = onSnapshot(docRef, (docSnap: DocumentData) => {
+      const data = docSnap.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setBooks(data);
+    });
+    setLoading(false);
+    return () => unsubscribe();
+  }, []);
+
+  if (isLoading || loading)
     return (
       <ActivityIndicator
         size={"large"}
@@ -178,30 +59,29 @@ const Home = () => {
       />
     );
 
-  const { control } = useForm();
-  const keyExtractor = (item: RandomData, index: number) => item.id.toString();
+  const keyExtractor = (item: bookType, index: number) => item.id.toString();
 
-  const renderHorizontaItem = ({ item }: { item: RandomData }) => {
+  const renderHorizontaItem = ({ item }: { item: bookType }) => {
     return (
       <View>
-        <Image source={item.image} style={styles.image} />
+        <Image source={{ uri: item.photoURL }} style={styles.image} />
         <CustomText variant="black" size="small" style={styles.bookTitle}>
-          {item.name}
+          {item.bookTitle}
         </CustomText>
       </View>
     );
   };
-  const renderVerticalItem = ({ item }: { item: RandomData }) => {
+  const renderVerticalItem = ({ item }: { item: bookType }) => {
     return (
       <Pressable
         style={styles.books}
         onPress={() => router.push(`/home/${item.id}`)}
       >
-        <Image source={item.image} style={styles.image} />
+        <Image source={{ uri: item.photoURL }} style={styles.image} />
         <View style={styles.booksDesc}>
-          <Text style={styles.title}>{item.name}</Text>
+          <Text style={styles.title}>{item.bookTitle}</Text>
 
-          <Text style={styles.bookAuther}>By {item.name}</Text>
+          <Text style={styles.bookAuthor}>By {item.bookAuthor}</Text>
         </View>
       </Pressable>
     );
@@ -222,7 +102,7 @@ const Home = () => {
           Recommended
         </CustomText>
         <CustomFlatList
-          data={data}
+          data={books}
           renderItem={renderHorizontaItem}
           showsHorizontalScrollIndicator={false}
           keyExtractor={keyExtractor}
@@ -234,7 +114,7 @@ const Home = () => {
           Books
         </CustomText>
         <CustomFlatList
-          data={data}
+          data={books}
           renderItem={renderVerticalItem}
           showsVerticalScrollIndicator={false}
           keyExtractor={keyExtractor}
@@ -285,7 +165,7 @@ const styles = StyleSheet.create({
     fontSize: wf("5.5"),
   },
 
-  bookAuther: {
+  bookAuthor: {
     fontFamily: "poppins-regular",
   },
 });

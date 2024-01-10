@@ -34,7 +34,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const DiscussionList = () => {
   const { discussionList: id } = useLocalSearchParams();
-  const [discussion, setDisscussins] = useState();
+  const [discussion, setDisscussins] = useState([]);
   const [loadingDiscussions, setLoadingDiscussions] = useState(true);
 
   const storeData = async () => {
@@ -59,8 +59,14 @@ const DiscussionList = () => {
       setDisscussins(data);
     });
     storeData();
-    setLoadingDiscussions(false);
-    return () => unsubscribe();
+    const delayTimer = setTimeout(() => {
+      setLoadingDiscussions(false);
+    }, 2000);
+
+    return () => {
+      clearTimeout(delayTimer);
+      unsubscribe();
+    };
   }, []);
 
   const keyExtractor = (item: discussionTypes, index: number) =>
@@ -109,7 +115,7 @@ const DiscussionList = () => {
         <Container style={{ marginBottom: hp("25%") }}>
           {loadingDiscussions ? (
             <ActivityIndicator size={"large"} />
-          ) : (
+          ) : discussion.length !== 0 ? (
             <CustomFlatList
               data={discussion}
               renderItem={renderVerticalItem}
@@ -117,6 +123,12 @@ const DiscussionList = () => {
               keyExtractor={keyExtractor}
               contentContainerStyle={styles.flatListContainer}
             />
+          ) : (
+            <CustomText
+              style={{ textAlign: "center", color: Colors.background }}
+            >
+              There is no discussion
+            </CustomText>
           )}
         </Container>
       </View>

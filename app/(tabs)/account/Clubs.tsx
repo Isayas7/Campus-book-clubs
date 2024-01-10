@@ -26,12 +26,15 @@ import { AuthContext } from "../../../context/AuthContext";
 import {
   DocumentData,
   collection,
+  deleteDoc,
+  doc,
   onSnapshot,
   orderBy,
   query,
   where,
 } from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface ClubType {
   id: string;
@@ -64,6 +67,36 @@ const Clubs = () => {
 
     return () => unsubscribe();
   }, []);
+
+ 
+  const createGroup = async () => {
+    try {
+      await AsyncStorage.setItem("@ClubId", `null`);
+      router.push(`/(tabs)/account/CreateClub`);
+      console.log("Data stored!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+
+  const updateGroup = async (id: string) => {
+    try {
+      await AsyncStorage.setItem("@ClubId", `${id}`);
+      router.push(`/(tabs)/account/CreateClub`);
+      console.log("Data stored!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+   const deleteGroup = async (id: string) => {
+     // const clubDoc = doc(FIRBASE_DB, "Clubs", id);
+     // try {
+     //   await deleteDoc(clubDoc);
+     //   console.log("clubs successfully deleted");
+     // } catch (error) {
+     //   console.log("clubs not deleted");
+     // }
+   };
 
   const clubItems = clubs.map((club) => ({
     id: club.id,
@@ -105,14 +138,24 @@ const Clubs = () => {
         </TouchableOpacity>
 
         <View style={{ display: "flex", gap: 10, marginRight: 10 }}>
-          <MaterialIcons
-            name="schedule"
-            size={24}
-            color="green"
+          <TouchableOpacity
             onPress={() => router.push(`/(tabs)/account/${item.id}`)}
-          />
-          <Entypo name="edit" size={24} color="blue" />
-          <AntDesign name="delete" size={24} color="red" />
+            style={{ paddingHorizontal: 4 }}
+          >
+            <MaterialIcons name="schedule" size={24} color="green" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => updateGroup(item.id)}
+            style={{ paddingHorizontal: 4 }}
+          >
+            <Entypo name="edit" size={24} color="blue" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => deleteGroup(item.id)}
+            style={{ paddingHorizontal: 4 }}
+          >
+            <AntDesign name="delete" size={24} color="red" />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -126,7 +169,7 @@ const Clubs = () => {
             <CustomText style={styles.text}>Create Club</CustomText>
             <CustomTouchableOpacity
               variant="secondary"
-              onPress={() => router.push("/(tabs)/account/CreateClub")}
+              onPress={() => createGroup()}
             >
               <Ionicons
                 name="add-outline"

@@ -7,4 +7,5 @@ export type CustomTextInputProps = TextInputProps & {
   control: any;
   name: string;
   rules?: object;
+  value?: any;
 };

@@ -1,8 +1,6 @@
 import {
   View,
-  Text,
   StyleSheet,
-  Image,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
@@ -19,7 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { AuthContext } from "../../../../context/AuthContext";
-import { clubProps } from "../../../../types/types";
+import { discussionTypes } from "../../../../types/types";
 import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../../firebaseConfig";
 import Container from "../../../../components/container/Container";
 import CustomText from "../../../../components/Text/CustomText";
@@ -30,9 +28,9 @@ import Colors from "../../../../constants/Colors";
 import { ScrollView } from "react-native-gesture-handler";
 
 const ScheduleDiscussion = () => {
-  const { sechedule: id } = useLocalSearchParams();
+  const { schedule: id } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
-  const { control, handleSubmit } = useForm<clubProps>();
+  const { control, handleSubmit } = useForm<discussionTypes>();
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [file, setFile] = useState<File>();
@@ -71,10 +69,10 @@ const ScheduleDiscussion = () => {
     }
   };
 
-  const crateClubs = async (data: clubProps) => {
+  const scheduleDiscussion = async (data: discussionTypes) => {
     setLoading(true);
     try {
-      const storageRef = ref(FIRBASE_STORAGE, "Clubs/" + file?.name);
+      const storageRef = ref(FIRBASE_STORAGE, `schedule/${id}/` + file?.name);
       if (file) await uploadBytes(storageRef, file);
 
       const photoURL = await getDownloadURL(storageRef);
@@ -82,15 +80,17 @@ const ScheduleDiscussion = () => {
         creater: user?.uid,
         photoURL,
         members: [],
-        discussions: [{}],
         createdAt: serverTimestamp(),
         ...data,
       };
       if (photoURL) {
-        await addDoc(collection(FIRBASE_DB, "Clubs"), RequestData);
-        console.log("clubs created successfully.");
+        await addDoc(
+          collection(FIRBASE_DB, `Clubs/${id}/discussions`),
+          RequestData
+        );
+        console.log("discussions created successfully.");
         setLoading(false);
-        router.push("/(tabs)/account/clubs");
+        router.push(`/(tabs)/account/${id}`);
       }
     } catch (error) {
       console.log("clubs not created ");
@@ -106,7 +106,7 @@ const ScheduleDiscussion = () => {
           <CustomTextInput
             placeholder="Enter book title for discussion"
             control={control}
-            name="clubName"
+            name="bookTitle"
           ></CustomTextInput>
         </View>
         <View>
@@ -114,7 +114,7 @@ const ScheduleDiscussion = () => {
           <CustomTextInput
             placeholder="Enter Book Auther"
             control={control}
-            name="about"
+            name="bookAuther"
           ></CustomTextInput>
         </View>
         <View>
@@ -122,7 +122,7 @@ const ScheduleDiscussion = () => {
           <CustomTextInput
             placeholder="Enter day of the discussion"
             control={control}
-            name="about"
+            name="day"
           ></CustomTextInput>
         </View>
         <View>
@@ -130,7 +130,7 @@ const ScheduleDiscussion = () => {
           <CustomTextInput
             placeholder="Enter start time of the discussion"
             control={control}
-            name="about"
+            name="startTime"
           ></CustomTextInput>
         </View>
         <View>
@@ -140,7 +140,7 @@ const ScheduleDiscussion = () => {
           </TouchableOpacity>
         </View>
 
-        <CustomTouchableOpacity onPress={handleSubmit(crateClubs)}>
+        <CustomTouchableOpacity onPress={handleSubmit(scheduleDiscussion)}>
           {loading ? (
             <ActivityIndicator style={{ padding: 5 }} />
           ) : (

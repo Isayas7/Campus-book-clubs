@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Image, ScrollView, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet } from "react-native";
 import { View } from "react-native";
 import {
   widthPercentageToDP as wp,
@@ -12,42 +12,61 @@ import Colors from "../../../constants/Colors";
 import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
+import { DocumentData, doc, onSnapshot } from "firebase/firestore";
+import { FIRBASE_DB } from "../../../firebaseConfig";
+import { bookType } from "../../../types/types";
 
 const Id = () => {
   const { id } = useLocalSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [book, setBook] = useState<bookType>();
+
+  useEffect(() => {
+    const clubRef = doc(FIRBASE_DB, `Books/${id}`);
+    const unsubscribe = onSnapshot(clubRef, (docSnap: DocumentData) => {
+      setBook({ id: docSnap.id, ...docSnap.data() });
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <Container style={styles.container}>
-        <View style={styles.wrapper}>
-          <Image
-            source={require("../../../assets/images/book1.jpg")}
-            style={styles.image}
-          />
-          <CustomText size="large" variant="black">
-            Bianca Hobbs
+      {loading ? (
+        <ActivityIndicator
+          size={"large"}
+          // style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        />
+      ) : (
+        <Container style={styles.container}>
+          <View style={styles.wrapper}>
+            <Image source={{ uri: book?.photoURL }} style={styles.image} />
+            <CustomText size="large" variant="black">
+              {book?.bookTitle}
+            </CustomText>
+            <CustomText variant="black" size="small">
+              {book?.bookAuthor}
+            </CustomText>
+          </View>
+          <CustomText variant="black" style={styles.descriptionTitle}>
+            Descriptions
           </CustomText>
-          <CustomText variant="black" size="small">
-            Bianca Hobbs
-          </CustomText>
-        </View>
-        <CustomText variant="black" style={styles.descriptionTitle}>
-          Descriptions
-        </CustomText>
 
-        <CustomText size="small" variant="black" style={styles.description}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium
-          alias quidem autem architecto rerum minus, praesentium at illo
-          nesciunt non quibusdam mollitia neque nemo magni delectus inventore
-          expedita doloremque aut?
-        </CustomText>
-
-        <CustomTouchableOpacity size="large" style={styles.button}>
-          <CustomText size="medium" style={{ color: Colors.background }}>
-            Read this book
+          <CustomText size="small" variant="black" style={styles.description}>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium
+            alias quidem autem architecto rerum minus, praesentium at illo
+            nesciunt non quibusdam mollitia neque nemo magni delectus inventore
+            expedita doloremque aut?
           </CustomText>
-        </CustomTouchableOpacity>
-      </Container>
+
+          <CustomTouchableOpacity size="large" style={styles.button}>
+            <CustomText size="medium" style={{ color: Colors.background }}>
+              Read this book
+            </CustomText>
+          </CustomTouchableOpacity>
+        </Container>
+      )}
     </ScrollView>
   );
 };

@@ -13,10 +13,6 @@ interface ImageViewerProps {
 }
 
 export const ImageViewer: React.FC<ImageViewerProps> = ({ selectedImage }) => {
-  let imageSource = selectedImage
-    ? { uri: selectedImage }
-    : require("../../assets/images/book1.jpg");
-
   return (
     <View
       style={{
