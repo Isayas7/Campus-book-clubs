@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomTextInput from "../../../components/TextInput/CustomTextInput";
 import { useForm } from "react-hook-form";
@@ -20,32 +20,70 @@ import { ScrollView } from "react-native-gesture-handler";
 import { ImageViewer } from "../../../components/ImageViewer/ImageViewer";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../firebaseConfig";
-import { uploadbookType } from "../../../types/types";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { bookType, uploadbookType } from "../../../types/types";
+import {
+  DocumentData,
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { AuthContext } from "../../../context/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const UploadBook = () => {
   const { user } = useContext(AuthContext);
-  const [fileName, setFileName] = useState<string>();
-  const [blobFile, setBlobFile] = useState<File>();
+  const [books, setBooks] = useState<uploadbookType>();
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [file, setFile] = useState<File>();
+  const [selectedFileName, setSelectedFileName] = useState<string>();
+  const [selectedImage, setSelectedImage] = useState<string | null>();
+
+  const [blobPdfFile, setBlobPdfFile] = useState<File>();
+  const [blobImgFile, setBlobImgFile] = useState<File>();
+
   const [loading, setLoading] = useState(false);
 
-  const { control, handleSubmit } = useForm<uploadbookType>();
+  const { control, setValue, handleSubmit } = useForm<uploadbookType>();
+
+  let bookId: string = "";
+
+  const retrieveData = async () => {
+    try {
+      bookId = (await AsyncStorage?.getItem("@bookId")) || "";
+    } catch (error) {
+      console.error("Error retrieving data:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (bookId !== null) {
+        await retrieveData();
+        const clubRef = doc(FIRBASE_DB, `Books/${bookId}`);
+        const unsubscribe = onSnapshot(clubRef, (docSnap: DocumentData) => {
+          setBooks({ id: docSnap.id, ...docSnap.data() });
+        });
+        return () => unsubscribe();
+      }
+    };
+    fetchData();
+  }, [bookId]);
+
+  useEffect(() => {
+    if (books) {
+      setValue("bookAuthor", books.bookAuthor || "");
+      setValue("bookTitle", books.bookTitle || "");
+    }
+  }, [books, setValue]);
 
   const pickPdf = async () => {
     let result = await DocumentPicker.getDocumentAsync({});
 
     if (!result.canceled) {
-      // const r = await fetch(result?.assets[0].uri);
-      // const b = await r.blob();
-      // setFileName(result.assets[0].name);
-      // setBlobFile(b);
-      //setIsChoosed(true)
       try {
-        setFileName(result.assets[0].name);
+        setSelectedFileName(result.assets[0].name);
 
         const response = await fetch(result.assets[0].uri);
 
@@ -55,7 +93,7 @@ const UploadBook = () => {
 
         if (fileName) {
           const file = new File([blob], fileName, { type: blob.type });
-          setBlobFile(file);
+          setBlobPdfFile(file);
         }
       } catch (error) {
         console.error("Error creating File object:", error);
@@ -82,7 +120,7 @@ const UploadBook = () => {
 
         if (fileName) {
           const file = new File([blob], fileName, { type: blob.type });
-          setFile(file);
+          setBlobImgFile(file);
         }
       } catch (error) {
         console.error("Error creating File object:", error);
@@ -95,21 +133,27 @@ const UploadBook = () => {
   const upLoadBook = async (data: uploadbookType) => {
     setLoading(true);
     try {
-      const storageRefPdf = ref(FIRBASE_STORAGE, "Books/Pdf/" + blobFile?.name);
-      const storageRefImg = ref(FIRBASE_STORAGE, "Books/Img/" + file?.name);
+      const storageRefPdf = ref(
+        FIRBASE_STORAGE,
+        "Books/Pdf/" + blobPdfFile?.name
+      );
+      const storageRefImg = ref(
+        FIRBASE_STORAGE,
+        "Books/Img/" + blobImgFile?.name
+      );
 
-      if (blobFile) await uploadBytes(storageRefPdf, blobFile);
-      if (file) await uploadBytes(storageRefImg, file);
+      if (blobPdfFile) await uploadBytes(storageRefPdf, blobPdfFile);
+      if (blobImgFile) await uploadBytes(storageRefImg, blobImgFile);
 
       const pdfURL = await getDownloadURL(storageRefPdf);
       const photoURL = await getDownloadURL(storageRefImg);
 
       const RequestData = {
         creater: user?.uid,
-        photoURL,
-        pdfURL,
         createdAt: serverTimestamp(),
         ...data,
+        photoURL,
+        pdfURL,
       };
       if (photoURL && pdfURL) {
         await addDoc(collection(FIRBASE_DB, "Books"), RequestData);
@@ -118,13 +162,97 @@ const UploadBook = () => {
         router.push("/(tabs)/account/Books");
       }
     } catch (error) {
-      console.log("clubs not created ");
+      console.log("Books not created ");
       console.error(error);
     }
   };
 
+  const updateBook = async (data: uploadbookType) => {
+    setLoading(true);
+    if (blobImgFile && blobPdfFile) {
+      const storageRefPdf = ref(FIRBASE_STORAGE, "Books/" + blobPdfFile?.name);
+      const storageRefImg = ref(FIRBASE_STORAGE, "Books/" + blobImgFile?.name);
+
+      if (blobPdfFile) await uploadBytes(storageRefPdf, blobPdfFile);
+      if (blobImgFile) await uploadBytes(storageRefImg, blobImgFile);
+
+      const pdfURL = await getDownloadURL(storageRefPdf);
+      const photoURL = await getDownloadURL(storageRefImg);
+      await retrieveData();
+      const bookDoc = doc(FIRBASE_DB, "Books", bookId);
+      try {
+        await updateDoc(bookDoc, {
+          ...data,
+          photoURL,
+          pdfURL,
+        });
+        console.log("books successfully updated");
+        setLoading(false);
+        router.push("/(tabs)/account/Books");
+      } catch (error) {
+        console.log("books not updated");
+        setLoading(false);
+      }
+    } else if (blobImgFile) {
+      const storageRefImg = ref(FIRBASE_STORAGE, "Books/" + blobImgFile?.name);
+
+      if (blobImgFile) await uploadBytes(storageRefImg, blobImgFile);
+
+      const photoURL = await getDownloadURL(storageRefImg);
+      await retrieveData();
+      const bookDoc = doc(FIRBASE_DB, "Books", bookId);
+      try {
+        await updateDoc(bookDoc, {
+          ...data,
+          photoURL,
+        });
+        console.log("books successfully updated");
+        setLoading(false);
+        router.push("/(tabs)/account/Books");
+      } catch (error) {
+        console.log("books not updated");
+        setLoading(false);
+      }
+    } else if (blobPdfFile) {
+      const storageRefPdf = ref(FIRBASE_STORAGE, "Books/" + blobPdfFile?.name);
+
+      if (blobPdfFile) await uploadBytes(storageRefPdf, blobPdfFile);
+
+      const pdfURL = await getDownloadURL(storageRefPdf);
+
+      await retrieveData();
+
+      const bookDoc = doc(FIRBASE_DB, "Books", bookId);
+
+      try {
+        await updateDoc(bookDoc, {
+          ...data,
+          pdfURL,
+        });
+        console.log("books successfully updated");
+        setLoading(false);
+        router.push("/(tabs)/account/Books");
+      } catch (error) {
+        console.log("books not updated");
+        setLoading(false);
+      }
+    } else {
+      await retrieveData();
+      const bookDoc = doc(FIRBASE_DB, "Books", bookId);
+      try {
+        await updateDoc(bookDoc, data);
+        console.log("books successfully updated");
+        setLoading(false);
+        router.push("/(tabs)/account/Books");
+      } catch (error) {
+        console.log("books not updated");
+        setLoading(false);
+      }
+    }
+  };
+
   return (
-    <ScrollView style={styles.wrapper}>
+    <ScrollView showsVerticalScrollIndicator={false} style={styles.wrapper}>
       <Container style={styles.container}>
         <View>
           <CustomText style={styles.text}>Book title</CustomText>
@@ -147,14 +275,17 @@ const UploadBook = () => {
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
+
               alignItems: "center",
             }}
           >
-            <Text>{fileName}</Text>
+            <Text style={{ flex: 11 }}>
+              {selectedFileName ? selectedFileName : books?.pdfURL}
+            </Text>
             <CustomTouchableOpacity
               variant="secondary"
               onPress={() => pickPdf()}
+              style={{ flex: 1 }}
             >
               <Ionicons
                 name="add-outline"
@@ -173,7 +304,9 @@ const UploadBook = () => {
               alignItems: "center",
             }}
           >
-            <ImageViewer selectedImage={selectedImage} />
+            <ImageViewer
+              selectedImage={selectedImage ?? books?.photoURL ?? ""}
+            />
             <CustomTouchableOpacity
               variant="secondary"
               onPress={() => pickImageAsync()}
@@ -187,13 +320,23 @@ const UploadBook = () => {
           </View>
         </View>
 
-        <CustomTouchableOpacity onPress={handleSubmit(upLoadBook)}>
-          {loading ? (
-            <ActivityIndicator style={{ padding: 5 }} />
-          ) : (
-            <CustomText>Upload</CustomText>
-          )}
-        </CustomTouchableOpacity>
+        {books?.bookTitle ? (
+          <CustomTouchableOpacity onPress={handleSubmit(updateBook)}>
+            {loading ? (
+              <ActivityIndicator style={{ padding: 5 }} />
+            ) : (
+              <CustomText>update</CustomText>
+            )}
+          </CustomTouchableOpacity>
+        ) : (
+          <CustomTouchableOpacity onPress={handleSubmit(upLoadBook)}>
+            {loading ? (
+              <ActivityIndicator style={{ padding: 5 }} />
+            ) : (
+              <CustomText>Upload</CustomText>
+            )}
+          </CustomTouchableOpacity>
+        )}
       </Container>
     </ScrollView>
   );

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
 import React, { useContext, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -11,9 +11,23 @@ import CustomText from "./Text/CustomText";
 import Colors from "../constants/Colors";
 import { router } from "expo-router";
 import { AuthContext } from "../context/AuthContext";
-import { AntDesign, Entypo, Feather, Ionicons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Entypo,
+  Feather,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import Container from "./container/Container";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import {
+  arrayRemove,
+  arrayUnion,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { FIRBASE_DB } from "../firebaseConfig";
 
 type ClubDataInfo = {
   clubsId?: string;
@@ -26,6 +40,48 @@ type ClubDataInfo = {
 const MessageHeader: React.FC<ClubDataInfo> = (props) => {
   const { user } = useContext(AuthContext);
   const [hide, setHide] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  //// Jions clubs
+  const joinClubs = async () => {
+    setLoading(true);
+    try {
+      const clubsRef = doc(FIRBASE_DB, `Clubs/${props.clubsId}`);
+
+      await updateDoc(clubsRef, { members: arrayUnion(user?.uid) });
+
+      console.log("Joined  successfully.");
+    } catch (error) {
+      console.error("Error uploading profile photo:", error);
+    }
+    setLoading(false);
+  };
+
+  const leaveGroup = async () => {
+    setLoading(true);
+    try {
+      const clubsRef = doc(FIRBASE_DB, `Clubs/${props.clubsId}`);
+
+      await updateDoc(clubsRef, { members: arrayRemove(user?.uid) });
+
+      console.log("Joined  successfully.");
+    } catch (error) {
+      console.error("Error uploading profile photo:", error);
+    }
+    setLoading(false);
+  };
+
+  const deleteGroup = async () => {
+    const clubDoc = doc(FIRBASE_DB, `Clubs/${props.clubsId}`);
+    try {
+      await deleteDoc(clubDoc);
+      console.log("clubs successfully deleted");
+      router.push("/(tabs)/Clubs");
+    } catch (error) {
+      console.log("clubs not deleted");
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.wrapper}>
@@ -116,6 +172,7 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
 
                 {props.id === user?.uid ? (
                   <TouchableOpacity
+                    onPress={() => deleteGroup()}
                     style={{
                       flexDirection: "row",
                       marginBottom: 10,
@@ -130,8 +187,11 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
                   </TouchableOpacity>
                 ) : (
                   <>
-                    {user && props.members?.includes(user?.uid) ? (
+                    {user &&
+                    props.members !== null &&
+                    props.members?.includes(user?.uid) ? (
                       <TouchableOpacity
+                        onPress={() => leaveGroup()}
                         style={{
                           flexDirection: "row",
                           marginBottom: 10,
@@ -140,12 +200,15 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
                         }}
                       >
                         <AntDesign name="delete" size={20} color="red" />
-                        <Text style={[styles.text, styles.delete]}>
-                          Leave group
-                        </Text>
+                        {loading ? (
+                          <ActivityIndicator />
+                        ) : (
+                          <Text style={[styles.text]}>Leave group</Text>
+                        )}
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity
+                        onPress={() => joinClubs()}
                         style={{
                           flexDirection: "row",
                           marginBottom: 10,
@@ -153,10 +216,16 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
                           alignItems: "center",
                         }}
                       >
-                        <AntDesign name="delete" size={20} color="red" />
-                        <Text style={[styles.text, styles.delete]}>
-                          Join group
-                        </Text>
+                        <MaterialIcons
+                          name="group-add"
+                          size={24}
+                          color="white"
+                        />
+                        {loading ? (
+                          <ActivityIndicator />
+                        ) : (
+                          <Text style={[styles.text]}>Join group</Text>
+                        )}
                       </TouchableOpacity>
                     )}
                   </>

@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   widthPercentageToDP as wp,
@@ -26,8 +26,11 @@ import { useForm } from "react-hook-form";
 import { backendClubProps } from "../../../types/types";
 import { DocumentData, collection, onSnapshot } from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
+import { MaterialIcons } from "@expo/vector-icons";
+import { AuthContext } from "../../../context/AuthContext";
 
 const Clubs = () => {
+  const { user } = useContext(AuthContext);
   const { control } = useForm();
   const [clubs, setClubs] = useState();
   const [loading, setLoading] = useState(true);
@@ -49,13 +52,14 @@ const Clubs = () => {
   const keyExtractor = (item: backendClubProps, index: number) => item.id;
 
   const renderHorizontaItem = ({ item }: { item: backendClubProps }) => {
-    const photoUrl = item?.photoURl;
-    const imageSource = photoUrl
-      ? { uri: photoUrl }
-      : require("../../../assets/images/book1.jpg");
     return (
       <View>
-        <Image source={imageSource} style={styles.image} />
+        {item.photoURL ? (
+          <Image source={{ uri: item.photoURL }} style={styles.image} />
+        ) : (
+          <MaterialIcons name="group" size={24} color="black" />
+        )}
+
         <CustomText variant="black" size="small" style={styles.bookTitle}>
           {item.clubName}
         </CustomText>
@@ -63,20 +67,26 @@ const Clubs = () => {
     );
   };
   const renderVerticalItem = ({ item }: { item: backendClubProps }) => {
-    const photoUrl = item?.photoURl;
-    const imageSource = photoUrl
-      ? { uri: photoUrl }
-      : require("../../../assets/images/book1.jpg");
     return (
       <Link key={item.id} href={`/message/${item.id}`} asChild>
         <TouchableOpacity style={styles.books}>
-          <Image source={imageSource} style={styles.image} />
+          {item.photoURL ? (
+            <Image source={{ uri: item.photoURL }} style={styles.image} />
+          ) : (
+            <MaterialIcons name="group" size={24} color="black" />
+          )}
           <View style={styles.booksDesc}>
             <CustomText variant="black" size="medium" style={styles.title}>
               {item.clubName}
             </CustomText>
-
-            <Text style={styles.bookAuther}>123 Members</Text>
+            {user && (
+              <Text style={styles.bookAuther}>
+                {item?.members?.includes(user?.uid) ||
+                user?.uid === item.creater
+                  ? item.lastMessage
+                  : item.members?.length}
+              </Text>
+            )}
           </View>
         </TouchableOpacity>
       </Link>

@@ -5,8 +5,10 @@ import {
   Image,
   Pressable,
   ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
 import {
@@ -18,63 +20,165 @@ import {
 import Colors from "../../../constants/Colors";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import ImageCard from "../../../components/imageCard/ImageCard";
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
-import { data } from "../home";
-import { RandomData } from "../../../types/types";
+import { AuthContext } from "../../../context/AuthContext";
+import {
+  DocumentData,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { FIRBASE_DB } from "../../../firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { bookType } from "../../../types/types";
 
 const Books = () => {
-  const keyExtractor = (item: RandomData, index: number) => item.id.toString();
-  const numColumns = 3;
+  const [books, setBooks] = useState<bookType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reFetch, setReFetch] = useState(true);
+  const { user } = useContext(AuthContext);
 
-  const renderVerticalItem = ({ item }: { item: RandomData }) => {
-    const columnWidth = wp(100) / numColumns - 10;
+  useEffect(() => {
+    const q = query(
+      collection(FIRBASE_DB, "Books"),
+      where("creater", "==", user?.uid),
+      orderBy("createdAt")
+    );
+    const unsubscribe = onSnapshot(q, (docSnap: DocumentData) => {
+      const data = docSnap.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setBooks(data);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const uploadBook = async () => {
+    try {
+      await AsyncStorage.setItem("@bookId", `null`);
+      router.push(`/(tabs)/account/UploadBook`);
+      console.log("Data stored!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+
+  const updateBook = async (id: string) => {
+    try {
+      await AsyncStorage.setItem("@bookId", `${id}`);
+      router.push(`/(tabs)/account/UploadBook`);
+      console.log("Data stored!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+  const deletebook = async (id: string) => {
+    const bookDoc = doc(FIRBASE_DB, "Books", id);
+    try {
+      await deleteDoc(bookDoc);
+      console.log("book successfully deleted");
+    } catch (error) {
+      console.log("book not deleted");
+    }
+  };
+
+  const clubItems = books.map((book) => ({
+    id: book.id,
+    photoURL: book.photoURL,
+    bookAuthor: book.bookAuthor,
+    bookTitle: book.bookTitle,
+  }));
+
+  const validClubItems = clubItems ? [...clubItems].reverse() : [];
+
+  const keyExtractor = (item: bookType, index: number) => item.id.toString();
+
+  const renderVerticalItem = ({ item }: { item: bookType }) => {
     return (
-      <Pressable onPress={() => router.push(`/home/${item.id}`)}>
-        <View
-          style={{
-            width: columnWidth,
-            marginHorizontal: 5,
-            justifyContent: "center",
-          }}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: "white",
+          padding: 10,
+          borderRadius: 10,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push(`/message/${item.id}`)}
+          style={styles.books}
         >
-          <Image
-            style={styles.image}
-            source={require("../../../assets/images/book1.jpg")}
-          />
-          <CustomText size="small" style={styles.text}>
-            lorem
-          </CustomText>
+          <Image source={{ uri: item?.photoURL }} style={styles.groupImage} />
+          <View style={styles.booksDesc}>
+            <CustomText variant="black" size="medium" style={styles.title}>
+              {item?.bookTitle}
+            </CustomText>
+
+            <Text style={styles.bookAuther}>by {item?.bookAuthor}</Text>
+          </View>
+        </TouchableOpacity>
+
+        <View style={{ display: "flex", gap: 10, marginRight: 10 }}>
+          <TouchableOpacity
+            onPress={() => updateBook(item.id)}
+            style={{ paddingHorizontal: 4 }}
+          >
+            <Entypo name="edit" size={24} color="blue" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => deletebook(item.id)}
+            style={{ paddingHorizontal: 4 }}
+          >
+            <AntDesign name="delete" size={24} color="red" />
+          </TouchableOpacity>
         </View>
-      </Pressable>
+      </View>
     );
   };
+
   return (
     <View style={styles.wrapper}>
-      <Container style={styles.continer}>
-        <View style={styles.row}>
-          <CustomText style={styles.text}>Upload Book</CustomText>
-          <CustomTouchableOpacity
-            variant="secondary"
-            onPress={() => router.push("/(tabs)/account/UploadBook")}
-          >
-            <Ionicons name="add-outline" size={24} color={Colors.background} />
-          </CustomTouchableOpacity>
-        </View>
+      <View style={styles.continer}>
+        <Container style={styles.continer}>
+          <View style={styles.row}>
+            <CustomText style={styles.text}>Upload book</CustomText>
+            <CustomTouchableOpacity
+              variant="secondary"
+              onPress={() => uploadBook()}
+            >
+              <Ionicons
+                name="add-outline"
+                size={24}
+                color={Colors.background}
+              />
+            </CustomTouchableOpacity>
+          </View>
+        </Container>
 
         <View style={styles.spareter} />
-
-        <CustomFlatList
-          style={{ marginBottom: 74 }}
-          data={data}
-          renderItem={renderVerticalItem}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={keyExtractor}
-          numColumns={numColumns}
-          contentContainerStyle={styles.flatListContainer}
-        />
-      </Container>
+        <Container style={{ marginBottom: hp("25%") }}>
+          {loading ? (
+            <ActivityIndicator size={"large"} />
+          ) : (
+            <CustomFlatList
+              data={validClubItems}
+              renderItem={renderVerticalItem}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={keyExtractor}
+              contentContainerStyle={styles.flatListContainer}
+            />
+          )}
+        </Container>
+      </View>
     </View>
   );
 };
@@ -94,9 +198,9 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    height: hp("15%"),
-    width: hp("13%"),
-    borderRadius: 1,
+    height: hp("14%"),
+    width: hp("14%"),
+    borderRadius: 200,
   },
   text: {
     color: Colors.background,
@@ -106,7 +210,37 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   flatListContainer: {
+    gap: 10,
+  },
+  cardContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    position: "relative",
+    alignItems: "center",
+  },
+  books: {
+    flexDirection: "row",
     gap: 20,
+
+    borderRadius: 5,
+  },
+
+  booksDesc: {
+    display: "flex",
+    justifyContent: "center",
+    // gap: 2,
+  },
+  title: {
+    textAlign: "left",
+  },
+
+  bookAuther: {
+    fontFamily: "poppins-regular",
+  },
+  groupImage: {
+    height: wp("19%"),
+    width: wp("19%"),
+    borderRadius: 5,
   },
 });
 

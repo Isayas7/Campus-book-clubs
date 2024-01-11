@@ -68,7 +68,6 @@ const Clubs = () => {
     return () => unsubscribe();
   }, []);
 
- 
   const createGroup = async () => {
     try {
       await AsyncStorage.setItem("@ClubId", `null`);
@@ -88,15 +87,15 @@ const Clubs = () => {
       console.error("Error storing data:", error);
     }
   };
-   const deleteGroup = async (id: string) => {
-     // const clubDoc = doc(FIRBASE_DB, "Clubs", id);
-     // try {
-     //   await deleteDoc(clubDoc);
-     //   console.log("clubs successfully deleted");
-     // } catch (error) {
-     //   console.log("clubs not deleted");
-     // }
-   };
+  const deleteGroup = async (id: string) => {
+    // const clubDoc = doc(FIRBASE_DB, "Clubs", id);
+    // try {
+    //   await deleteDoc(clubDoc);
+    //   console.log("clubs successfully deleted");
+    // } catch (error) {
+    //   console.log("clubs not deleted");
+    // }
+  };
 
   const clubItems = clubs.map((club) => ({
     id: club.id,

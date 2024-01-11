@@ -1,10 +1,9 @@
 import {
   View,
-  Text,
   StyleSheet,
-  Image,
   ActivityIndicator,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
@@ -39,12 +38,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CreateClub = () => {
   const { user } = useContext(AuthContext);
-  const { control, handleSubmit } = useForm<clubProps>();
+  const [clubs, setClubs] = useState<ClubData>();
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const [file, setFile] = useState<File>();
   const [loading, setLoading] = useState(false);
-  const [clubs, setClubs] = useState<ClubData>();
+
+  const { control, handleSubmit, setValue } = useForm<clubProps>();
 
   let clubId: string = "";
 
@@ -69,6 +69,13 @@ const CreateClub = () => {
     };
     fetchData();
   }, [clubId]);
+
+  useEffect(() => {
+    if (clubs) {
+      setValue("clubName", clubs.clubName || "");
+      setValue("about", clubs.about || "");
+    }
+  }, [clubs, setValue]);
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -128,17 +135,47 @@ const CreateClub = () => {
   };
 
   const updateGroup = async (data: clubProps) => {
-    const clubDoc = doc(FIRBASE_DB, "Clubs", clubId);
-    try {
-      await updateDoc(clubDoc, data);
-      console.log("clubs successfully updated");
-    } catch (error) {
-      console.log("clubs not updated");
+    setLoading(true);
+    if (file) {
+      const storageRef = ref(FIRBASE_STORAGE, "Clubs/" + file?.name);
+      if (file) await uploadBytes(storageRef, file);
+      const photoURL = await getDownloadURL(storageRef);
+      await retrieveData();
+
+      const clubDoc = doc(FIRBASE_DB, "Clubs", clubId);
+      try {
+        await updateDoc(clubDoc, {
+          photoURL,
+          about: data.about,
+          clubName: data.clubName,
+        });
+        console.log("clubs successfully updated");
+        setLoading(false);
+        router.push("/(tabs)/account/clubs");
+      } catch (error) {
+        console.log("clubs not updated");
+        setLoading(false);
+      }
+    } else {
+      await retrieveData();
+      const clubDoc = doc(FIRBASE_DB, "Clubs", clubId);
+      try {
+        await updateDoc(clubDoc, {
+          about: data.about,
+          clubName: data.clubName,
+        });
+        console.log("clubs successfully updated");
+        setLoading(false);
+        router.push("/(tabs)/account/clubs");
+      } catch (error) {
+        console.log("clubs not updated");
+        setLoading(false);
+      }
     }
   };
 
   return (
-    <View style={styles.wrapper}>
+    <ScrollView style={styles.wrapper}>
       <Container style={styles.container}>
         <View>
           <CustomText style={styles.text}>Club name</CustomText>
@@ -146,7 +183,6 @@ const CreateClub = () => {
             placeholder="Enter club name"
             control={control}
             name="clubName"
-            value={clubs?.clubName}
           ></CustomTextInput>
         </View>
         <View>
@@ -155,15 +191,17 @@ const CreateClub = () => {
             placeholder="Write about your club"
             control={control}
             name="about"
-            value={clubs?.about}
           ></CustomTextInput>
         </View>
         <View>
           <CustomText style={styles.text}>Picture</CustomText>
           <TouchableOpacity onPress={pickImageAsync}>
             <ImageViewer
-              selectedImage={clubs?.photoURL ? clubs?.photoURL : selectedImage}
+              selectedImage={selectedImage ? selectedImage : clubs?.photoURL}
             />
+            {/* <ImageViewer
+              selectedImage={selectedImage ?? clubs?.photoURL ?? ""}
+            /> */}
           </TouchableOpacity>
         </View>
 
@@ -185,7 +223,7 @@ const CreateClub = () => {
           </CustomTouchableOpacity>
         )}
       </Container>
-    </View>
+    </ScrollView>
   );
 };
 

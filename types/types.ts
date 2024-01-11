@@ -22,11 +22,10 @@ export type clubProps = {
 };
 
 export type uploadbookType = {
-  bookAuther: string;
+  bookAuthor: string;
   bookTitle: string;
-  // creater: string;
-  // pdfURL: string;
-  // photoURL: string;
+  photoURL: string;
+  pdfURL: string;
 };
 
 export type bookType = {
@@ -42,8 +41,10 @@ export type backendClubProps = {
   id: string;
   about: string;
   clubName: string;
-  photoURl: string;
+  photoURL: string;
+  creater: string;
   members?: string[];
+  lastMessage: any;
 };
 
 export type ClubData = {

@@ -26,12 +26,15 @@ import { AuthContext } from "../../../context/AuthContext";
 import { DocumentData, collection, onSnapshot } from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import { bookType } from "../../../types/types";
+import { TextInput } from "react-native-gesture-handler";
+import { AntDesign } from "@expo/vector-icons";
 
 const Home = () => {
   const { isLoading, authenticated } = useContext(AuthContext);
   const { control } = useForm();
   const [books, setBooks] = useState();
   const [loading, setLoading] = useState(true);
+  const [text, setText] = useState<string>();
 
   // if (!authenticated) {
   //   return <Redirect href="/login" />;
@@ -58,6 +61,16 @@ const Home = () => {
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       />
     );
+
+  const keys = ["bookTitle", "bookAuthor"];
+
+  const handleSearch = (books: any) => {
+    return books?.filter((item: any) =>
+      keys.some((key) =>
+        item[key].toLowerCase().includes(text?.toLocaleLowerCase())
+      )
+    );
+  };
 
   const keyExtractor = (item: bookType, index: number) => item.id.toString();
 
@@ -90,13 +103,26 @@ const Home = () => {
     <ScrollView showsVerticalScrollIndicator={false}>
       <StatusBar style="light" backgroundColor={Colors.background} />
       <Container>
-        <CustomTextInput
-          control={control}
-          name="search"
-          icon="search"
-          // style={styles.search}
-          placeholder="Search book here"
-        />
+        <View
+          style={{
+            flexDirection: "row",
+            borderWidth: 1,
+            borderRadius: 14,
+            padding: 5,
+            marginTop: 5,
+            borderColor: Colors.background,
+            height: hp("7%"),
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TextInput
+            style={{ flex: 1, height: "auto" }}
+            placeholder="Search book here"
+            onChangeText={(text) => setText(text)}
+          />
+          <AntDesign name="search1" size={24} color={Colors.background} />
+        </View>
 
         <CustomText variant="black" style={styles.recomendText}>
           Recommended
@@ -114,7 +140,7 @@ const Home = () => {
           Books
         </CustomText>
         <CustomFlatList
-          data={books}
+          data={handleSearch(books)}
           renderItem={renderVerticalItem}
           showsVerticalScrollIndicator={false}
           keyExtractor={keyExtractor}

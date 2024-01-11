@@ -95,6 +95,19 @@ const Message = () => {
     };
   }, [id]);
 
+  const lastMessage = async (lastMessage: any) => {
+    const docRef = doc(FIRBASE_DB, "Clubs", id);
+
+    try {
+      await updateDoc(docRef, {
+        lastMessage,
+      });
+      console.log("last message updating successfully");
+    } catch (error) {
+      console.error("Error updating user :", error);
+    }
+  };
+
   /// Send Messages
   const sendMessage = async () => {
     setMessage("");
@@ -107,6 +120,7 @@ const Message = () => {
         sender: user?.uid,
         createdAt: serverTimestamp(),
       });
+      lastMessage(message);
 
       console.log("message sent successfully.");
     } catch (error) {
@@ -198,7 +212,9 @@ const Message = () => {
         )}
 
         {(clubs && clubs?.creater === user?.uid) ||
-        (user && clubs?.members.includes(user?.uid)) ? (
+        (user &&
+          clubs?.members !== null &&
+          clubs?.members?.includes(user?.uid)) ? (
           <View style={styles.inputContainer}>
             <Entypo
               name="emoji-happy"

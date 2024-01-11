@@ -33,7 +33,6 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   icon,
   control,
   name,
-  value: parentValue,
   rules = {},
   ...props
 }) => {
@@ -51,7 +50,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           <StyledTextInput
             {...props}
             onChangeText={onChange}
-            value={parentValue ? parentValue : value}
+            value={value}
             onBlur={onBlur}
           />
           {error && (
