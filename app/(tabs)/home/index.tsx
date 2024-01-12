@@ -17,13 +17,19 @@ import {
 import { StyleSheet } from "react-native";
 import Colors from "../../../constants/Colors";
 import Container from "../../../components/container/Container";
-import CustomTextInput from "../../../components/TextInput/CustomTextInput";
 import CustomText from "../../../components/Text/CustomText";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
-import { Redirect, router } from "expo-router";
+import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { AuthContext } from "../../../context/AuthContext";
-import { DocumentData, collection, onSnapshot } from "firebase/firestore";
+import {
+  DocumentData,
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import { bookType } from "../../../types/types";
 import { TextInput } from "react-native-gesture-handler";
@@ -31,10 +37,10 @@ import { AntDesign } from "@expo/vector-icons";
 
 const Home = () => {
   const { isLoading, authenticated } = useContext(AuthContext);
-  const { control } = useForm();
-  const [books, setBooks] = useState();
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState<string>();
+  const [books, setBooks] = useState();
+  const [topViewedBooks, setTopViewedBooks] = useState();
 
   // if (!authenticated) {
   //   return <Redirect href="/login" />;
@@ -50,8 +56,38 @@ const Home = () => {
       }));
       setBooks(data);
     });
-    setLoading(false);
-    return () => unsubscribe();
+
+    const delayTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    return () => {
+      clearTimeout(delayTimer);
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const booksCollection = collection(FIRBASE_DB, "Books");
+
+    const queryBooks = query(
+      booksCollection,
+      orderBy("view", "desc"),
+      limit(10)
+    );
+
+    const unsubscribe = onSnapshot(queryBooks, (querySnapshot) => {
+      const books = querySnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setTopViewedBooks(books);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   if (isLoading || loading)
@@ -76,12 +112,12 @@ const Home = () => {
 
   const renderHorizontaItem = ({ item }: { item: bookType }) => {
     return (
-      <View>
+      <Pressable onPress={() => router.push(`/home/${item.id}`)}>
         <Image source={{ uri: item.photoURL }} style={styles.image} />
         <CustomText variant="black" size="small" style={styles.bookTitle}>
           {item.bookTitle}
         </CustomText>
-      </View>
+      </Pressable>
     );
   };
   const renderVerticalItem = ({ item }: { item: bookType }) => {
@@ -128,7 +164,7 @@ const Home = () => {
           Recommended
         </CustomText>
         <CustomFlatList
-          data={books}
+          data={topViewedBooks}
           renderItem={renderHorizontaItem}
           showsHorizontalScrollIndicator={false}
           keyExtractor={keyExtractor}
@@ -139,13 +175,18 @@ const Home = () => {
         <CustomText variant="black" style={styles.recomendText}>
           Books
         </CustomText>
-        <CustomFlatList
-          data={handleSearch(books)}
-          renderItem={renderVerticalItem}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.flatListContainer}
-        />
+
+        {loading ? (
+          <ActivityIndicator />
+        ) : (
+          <CustomFlatList
+            data={text ? handleSearch(books) : books}
+            renderItem={renderVerticalItem}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.flatListContainer}
+          />
+        )}
       </Container>
     </ScrollView>
   );

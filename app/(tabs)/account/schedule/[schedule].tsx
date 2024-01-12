@@ -4,7 +4,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   widthPercentageToDP as wp,
@@ -15,7 +15,15 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  DocumentData,
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { AuthContext } from "../../../../context/AuthContext";
 import { discussionTypes } from "../../../../types/types";
 import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../../firebaseConfig";
@@ -26,15 +34,56 @@ import { ImageViewer } from "../../../../components/ImageViewer/ImageViewer";
 import CustomTouchableOpacity from "../../../../components/TouchableOpacity/CustomTouchableOpacity";
 import Colors from "../../../../constants/Colors";
 import { ScrollView } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ScheduleDiscussion = () => {
   const { schedule: id } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
-  const { control, handleSubmit } = useForm<discussionTypes>();
+  const { control, setValue, handleSubmit } = useForm<discussionTypes>();
+  const [discussion, setDiscussion] = useState<discussionTypes>();
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [file, setFile] = useState<File>();
   const [loading, setLoading] = useState(false);
+
+  let clubId: string = "";
+
+  const retrieveData = async () => {
+    try {
+      clubId = (await AsyncStorage?.getItem("@ClubId")) || "";
+    } catch (error) {
+      console.error("Error retrieving data:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (clubId !== null) {
+        await retrieveData();
+        const discussionRef = doc(
+          FIRBASE_DB,
+          `Clubs/${clubId}/discussions/${id}`
+        );
+        const unsubscribe = onSnapshot(
+          discussionRef,
+          (docSnap: DocumentData) => {
+            setDiscussion({ id: docSnap.id, ...docSnap.data() });
+          }
+        );
+        return () => unsubscribe();
+      }
+    };
+    fetchData();
+  }, [clubId]);
+
+  useEffect(() => {
+    if (discussion) {
+      setValue("bookAuther", discussion.bookAuther || "");
+      setValue("bookTitle", discussion.bookTitle || "");
+      setValue("day", discussion.day || "");
+      setValue("startTime", discussion.startTime || "");
+    }
+  }, [discussion, setValue]);
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -78,10 +127,10 @@ const ScheduleDiscussion = () => {
       const photoURL = await getDownloadURL(storageRef);
       const RequestData = {
         creater: user?.uid,
-        photoURL,
         members: [],
         createdAt: serverTimestamp(),
         ...data,
+        photoURL,
       };
       if (photoURL) {
         await addDoc(
@@ -93,8 +142,51 @@ const ScheduleDiscussion = () => {
         router.push(`/(tabs)/account/${id}`);
       }
     } catch (error) {
-      console.log("clubs not created ");
+      console.log("discussions not created ");
       console.error(error);
+    }
+  };
+
+  const updateDiscussion = async (data: discussionTypes) => {
+    setLoading(true);
+    if (file) {
+      const storageRef = ref(FIRBASE_STORAGE, `schedule/${id}/` + file?.name);
+      await uploadBytes(storageRef, file);
+      const photoURL = await getDownloadURL(storageRef);
+      await retrieveData();
+
+      try {
+        const discussionDoc = doc(
+          FIRBASE_DB,
+          `Clubs/${clubId}/discussions/${id}`
+        );
+        await updateDoc(discussionDoc, {
+          ...data,
+          photoURL,
+        });
+        console.log("discussion successfully updated");
+        setLoading(false);
+        router.push(`/(tabs)/account/${clubId}`);
+      } catch (error) {
+        console.log("discussions not updated");
+        setLoading(false);
+      }
+    } else {
+      await retrieveData();
+      const discussionDoc = doc(
+        FIRBASE_DB,
+        `Clubs/${clubId}/discussions/${id}`
+      );
+
+      try {
+        await updateDoc(discussionDoc, data);
+        console.log("discussions successfully updated");
+        setLoading(false);
+        router.push(`/(tabs)/account/${clubId}`);
+      } catch (error) {
+        console.log("discussions not updated");
+        setLoading(false);
+      }
     }
   };
 
@@ -136,17 +228,29 @@ const ScheduleDiscussion = () => {
         <View>
           <CustomText style={styles.text}>Book pdf</CustomText>
           <TouchableOpacity onPress={pickImageAsync}>
-            <ImageViewer selectedImage={selectedImage} />
+            <ImageViewer
+              selectedImage={selectedImage ?? discussion?.photoURL ?? ""}
+            />
           </TouchableOpacity>
         </View>
 
-        <CustomTouchableOpacity onPress={handleSubmit(scheduleDiscussion)}>
-          {loading ? (
-            <ActivityIndicator style={{ padding: 5 }} />
-          ) : (
-            <CustomText>Schedule</CustomText>
-          )}
-        </CustomTouchableOpacity>
+        {discussion?.bookAuther ? (
+          <CustomTouchableOpacity onPress={handleSubmit(updateDiscussion)}>
+            {loading ? (
+              <ActivityIndicator style={{ padding: 5 }} />
+            ) : (
+              <CustomText>Update</CustomText>
+            )}
+          </CustomTouchableOpacity>
+        ) : (
+          <CustomTouchableOpacity onPress={handleSubmit(scheduleDiscussion)}>
+            {loading ? (
+              <ActivityIndicator style={{ padding: 5 }} />
+            ) : (
+              <CustomText>Schedule</CustomText>
+            )}
+          </CustomTouchableOpacity>
+        )}
       </Container>
     </ScrollView>
   );

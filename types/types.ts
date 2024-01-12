@@ -67,6 +67,7 @@ export type discussionTypes = {
   bookAuther: string;
   bookTitle: string;
   // creater: string;
+  photoURL: string;
   day: string;
   startTime: string;
 };

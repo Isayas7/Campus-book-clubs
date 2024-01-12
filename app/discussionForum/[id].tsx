@@ -51,6 +51,7 @@ const DiscussionForum = () => {
   const retrieveData = async () => {
     try {
       storedData = (await AsyncStorage?.getItem("@ClubId")) || "";
+      console.log("ClubId  retrieved successfully! ", storedData);
     } catch (error) {
       console.error("Error retrieving data:", error);
     }

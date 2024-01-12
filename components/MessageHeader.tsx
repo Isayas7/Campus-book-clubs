@@ -25,6 +25,7 @@ import {
   arrayUnion,
   deleteDoc,
   doc,
+  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import { FIRBASE_DB } from "../firebaseConfig";
@@ -47,8 +48,13 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
     setLoading(true);
     try {
       const clubsRef = doc(FIRBASE_DB, `Clubs/${props.clubsId}`);
+      const bookDoc = await getDoc(clubsRef);
+      const currentmember = bookDoc.data()?.member || 0;
 
-      await updateDoc(clubsRef, { members: arrayUnion(user?.uid) });
+      await updateDoc(clubsRef, {
+        members: arrayUnion(user?.uid),
+        member: currentmember + 1,
+      });
 
       console.log("Joined  successfully.");
     } catch (error) {
@@ -61,8 +67,13 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
     setLoading(true);
     try {
       const clubsRef = doc(FIRBASE_DB, `Clubs/${props.clubsId}`);
+      const bookDoc = await getDoc(clubsRef);
+      const currentmember = bookDoc.data()?.member || 0;
 
-      await updateDoc(clubsRef, { members: arrayRemove(user?.uid) });
+      await updateDoc(clubsRef, {
+        members: arrayRemove(user?.uid),
+        member: currentmember - 1,
+      });
 
       console.log("Joined  successfully.");
     } catch (error) {

@@ -30,7 +30,8 @@ import CustomText from "../../../components/Text/CustomText";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import Colors from "../../../constants/Colors";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
+import { Image } from "react-native";
 
 const DiscussionList = () => {
   const { discussionList: id } = useLocalSearchParams();
@@ -40,7 +41,7 @@ const DiscussionList = () => {
   const storeData = async () => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
-      console.log("Data stored successfully!");
+      console.log("ClubId stored successfully! ", id);
     } catch (error) {
       console.error("Error storing data:", error);
     }
@@ -69,25 +70,79 @@ const DiscussionList = () => {
     };
   }, []);
 
+  const scheduleDiscussion = async () => {
+    try {
+      await AsyncStorage.setItem("@ClubId", `null`);
+      router.push(`/(tabs)/account/schedule/${id}`);
+      console.log("Data stored!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+
+  const updateDiscussion = async (did: string) => {
+    try {
+      await AsyncStorage.setItem("@ClubId", `${id}`);
+      router.push(`/(tabs)/account/schedule/${did}`);
+      console.log("Data stored!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+  const deleteDiscussion = async (id: string) => {
+    // const clubDoc = doc(FIRBASE_DB, "Clubs", id);
+    // try {
+    //   await deleteDoc(clubDoc);
+    //   console.log("clubs successfully deleted");
+    // } catch (error) {
+    //   console.log("clubs not deleted");
+    // }
+  };
+
   const keyExtractor = (item: discussionTypes, index: number) =>
     item.id.toString();
 
   const renderVerticalItem = ({ item }: { item: discussionTypes }) => {
     return (
-      <TouchableOpacity
-        style={styles.books}
-        onPress={() => router.push(`/discussionForum/${item.id}`)}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: "white",
+          padding: 10,
+          borderRadius: 10,
+        }}
       >
-        {/* <Image source={} style={styles.image} /> */}
-        <View style={styles.booksDesc}>
-          <Text style={styles.title}>{item.bookTitle}</Text>
+        <TouchableOpacity
+          onPress={() => router.push(`/discussionForum/${item.id}`)}
+          style={styles.books}
+        >
+          <Image source={{ uri: item?.photoURL }} style={styles.groupImage} />
 
-          <Text style={styles.bookAuther}>By {item.bookAuther}</Text>
-          <Text style={styles.bookAuther}>{item.day}</Text>
+          <View style={styles.booksDesc}>
+            <Text style={styles.title}>{item?.bookTitle}</Text>
+            <Text style={styles.title}>by {item?.bookAuther}</Text>
+            <Text style={styles.title}>{item?.day}</Text>
+            <Text style={styles.title}>{item?.startTime}</Text>
+          </View>
+        </TouchableOpacity>
 
-          <Text style={styles.bookAuther}>Start time: {item.startTime} am</Text>
+        <View style={{ display: "flex", gap: 10, marginRight: 10 }}>
+          <TouchableOpacity
+            onPress={() => updateDiscussion(item.id)}
+            style={{ paddingHorizontal: 4 }}
+          >
+            <Entypo name="edit" size={24} color="blue" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            // onPress={() => deleteGroup(item.id)}
+            style={{ paddingHorizontal: 4 }}
+          >
+            <AntDesign name="delete" size={24} color="red" />
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -99,7 +154,7 @@ const DiscussionList = () => {
             <CustomText style={styles.text}>Schedule discussion</CustomText>
             <CustomTouchableOpacity
               variant="secondary"
-              onPress={() => router.push(`/(tabs)/account/schedule/${id}`)}
+              onPress={() => scheduleDiscussion()}
             >
               <Ionicons
                 name="add-outline"
@@ -157,6 +212,7 @@ const styles = StyleSheet.create({
   books: {
     flexDirection: "row",
     gap: 20,
+    alignItems: "center",
 
     borderRadius: 5,
   },
@@ -181,6 +237,11 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     gap: 10,
+  },
+  groupImage: {
+    height: wp("19%"),
+    width: wp("19%"),
+    borderRadius: 10,
   },
 });
 export default DiscussionList;

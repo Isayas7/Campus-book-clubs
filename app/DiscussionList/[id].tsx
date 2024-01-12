@@ -23,6 +23,8 @@ import {
 } from "react-native-responsive-screen-font";
 import CustomText from "../../components/Text/CustomText";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Image } from "react-native";
+import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 
 const DiscussionList = () => {
   const { id } = useLocalSearchParams();
@@ -72,20 +74,29 @@ const DiscussionList = () => {
 
   const renderVerticalItem = ({ item }: { item: discussionTypes }) => {
     return (
-      <TouchableOpacity
-        style={styles.books}
-        onPress={() => router.push(`/discussionForum/${item.id}`)}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: "white",
+          padding: 10,
+          borderRadius: 10,
+        }}
       >
-        {/* <Image source={} style={styles.image} /> */}
-        <View style={styles.booksDesc}>
-          <Text style={styles.title}>{item.bookTitle}</Text>
-
-          <Text style={styles.bookAuther}>By {item.bookAuther}</Text>
-          <Text style={styles.bookAuther}>{item.day}</Text>
-
-          <Text style={styles.bookAuther}>Start time: {item.startTime} am</Text>
-        </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push(`/discussionForum/${item.id}`)}
+          style={styles.books}
+        >
+          <Image source={{ uri: item?.photoURL }} style={styles.groupImage} />
+          <View style={styles.booksDesc}>
+            <Text style={styles.title}>{item?.bookTitle}</Text>
+            <Text style={styles.title}>by {item?.bookAuther}</Text>
+            <Text style={styles.title}>{item?.day}</Text>
+            <Text style={styles.title}>{item?.startTime}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -119,7 +130,7 @@ const styles = StyleSheet.create({
   books: {
     flexDirection: "row",
     gap: 20,
-
+    alignItems: "center",
     borderRadius: 5,
   },
   bookTitle: {
@@ -146,6 +157,11 @@ const styles = StyleSheet.create({
     // alignItems: "center",
     // justifyContent: "center",
     gap: 10,
+  },
+  groupImage: {
+    height: wp("19%"),
+    width: wp("19%"),
+    borderRadius: 10,
   },
 });
 export default DiscussionList;

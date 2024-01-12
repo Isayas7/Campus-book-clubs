@@ -6,6 +6,7 @@ import {
   Pressable,
   ActivityIndicator,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -24,16 +25,26 @@ import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import { Link } from "expo-router";
 import { useForm } from "react-hook-form";
 import { backendClubProps } from "../../../types/types";
-import { DocumentData, collection, onSnapshot } from "firebase/firestore";
+import {
+  DocumentData,
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
-import { MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { AuthContext } from "../../../context/AuthContext";
 
 const Clubs = () => {
   const { user } = useContext(AuthContext);
   const { control } = useForm();
-  const [clubs, setClubs] = useState();
+  const [clubs, setClubs] = useState([]);
+  const [topClubs, setTopClubs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [text, setText] = useState<string>();
 
   useEffect(() => {
     const docRef = collection(FIRBASE_DB, "Clubs");
@@ -47,6 +58,29 @@ const Clubs = () => {
     });
     setLoading(false);
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const clubCollection = collection(FIRBASE_DB, "Clubs");
+
+    const queryBooks = query(
+      clubCollection,
+      orderBy("member", "desc"),
+      limit(10)
+    );
+
+    const unsubscribe = onSnapshot(queryBooks, (querySnapshot) => {
+      const clubs = querySnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setTopClubs(clubs);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const keyExtractor = (item: backendClubProps, index: number) => item.id;
@@ -93,17 +127,40 @@ const Clubs = () => {
     );
   };
 
+  const keys = ["clubName", "about"];
+
+  const handleSearch = (clubs: any) => {
+    return clubs?.filter((item: any) =>
+      keys.some((key) =>
+        item[key].toLowerCase().includes(text?.toLocaleLowerCase())
+      )
+    );
+  };
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <StatusBar style="light" backgroundColor={Colors.background} />
       <Container>
-        <CustomTextInput
-          control={control}
-          name="search"
-          icon="search"
-          // style={styles.search}
-          placeholder="Search Clubs here"
-        />
+        <View
+          style={{
+            flexDirection: "row",
+            borderWidth: 1,
+            borderRadius: 14,
+            padding: 5,
+            marginTop: 5,
+            borderColor: Colors.background,
+            height: hp("7%"),
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TextInput
+            style={{ flex: 1, height: "auto" }}
+            placeholder="Search clubs here"
+            onChangeText={(text) => setText(text)}
+          />
+          <AntDesign name="search1" size={24} color={Colors.background} />
+        </View>
 
         <CustomText variant="black" style={styles.recomendText}>
           Recommended
@@ -113,7 +170,7 @@ const Clubs = () => {
           <ActivityIndicator size={"large"} />
         ) : (
           <CustomFlatList
-            data={clubs}
+            data={topClubs}
             renderItem={renderHorizontaItem}
             showsHorizontalScrollIndicator={false}
             keyExtractor={keyExtractor}
@@ -130,7 +187,7 @@ const Clubs = () => {
           <ActivityIndicator size={"large"} />
         ) : (
           <CustomFlatList
-            data={clubs}
+            data={text ? handleSearch(clubs) : clubs}
             renderItem={renderVerticalItem}
             showsVerticalScrollIndicator={false}
             keyExtractor={keyExtractor}

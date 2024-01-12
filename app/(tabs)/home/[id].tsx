@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Image, ScrollView, StyleSheet } from "react-native";
 import { View } from "react-native";
@@ -12,12 +12,23 @@ import Colors from "../../../constants/Colors";
 import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import { DocumentData, doc, onSnapshot } from "firebase/firestore";
+import {
+  DocumentData,
+  arrayRemove,
+  arrayUnion,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import { bookType } from "../../../types/types";
+import * as OpenAnything from "react-native-openanything";
+import { AuthContext } from "../../../context/AuthContext";
 
 const Id = () => {
   const { id } = useLocalSearchParams();
+  const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [book, setBook] = useState<bookType>();
 
@@ -30,6 +41,53 @@ const Id = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const handleRecent = async () => {
+    OpenAnything.Pdf(book?.pdfURL);
+    if (user) {
+      const docRef = doc(FIRBASE_DB, "users", user.uid);
+      const userDoc = await getDoc(docRef);
+
+      const recentArray = userDoc.data()?.recent || [];
+      const index = recentArray.indexOf(book?.id);
+
+      if (index !== -1) {
+        const updatedRecentArray = [
+          book?.id,
+          ...recentArray.slice(0, index),
+          ...recentArray.slice(index + 1),
+        ];
+        try {
+          await updateDoc(docRef, { recent: updatedRecentArray });
+          console.log("Recent array updated successfully");
+          await increaseView();
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        const updatedRecentArray = [book?.id, ...recentArray];
+        try {
+          await updateDoc(docRef, { recent: updatedRecentArray });
+          console.log("Recent array added successfully");
+          await increaseView();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
+  };
+
+  const increaseView = async () => {
+    const bookDocRef = doc(FIRBASE_DB, `Books/${book?.id}`);
+    const bookDoc = await getDoc(bookDocRef);
+    const currentViews = bookDoc.data()?.view || 0;
+    try {
+      await updateDoc(bookDocRef, { view: currentViews + 1 });
+      console.log("view updated successfully");
+    } catch (error) {
+      console.log("view not updated successfully");
+    }
+  };
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -60,7 +118,11 @@ const Id = () => {
             expedita doloremque aut?
           </CustomText>
 
-          <CustomTouchableOpacity size="large" style={styles.button}>
+          <CustomTouchableOpacity
+            onPress={() => handleRecent()}
+            size="large"
+            style={styles.button}
+          >
             <CustomText size="medium" style={{ color: Colors.background }}>
               Read this book
             </CustomText>

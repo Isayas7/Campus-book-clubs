@@ -145,8 +145,13 @@ const Message = () => {
     setLoading(true);
     try {
       const clubsRef = doc(FIRBASE_DB, `Clubs/${id}`);
+      const bookDoc = await getDoc(clubsRef);
+      const currentmember = bookDoc.data()?.member || 0;
 
-      await updateDoc(clubsRef, { members: arrayUnion(user?.uid) });
+      await updateDoc(clubsRef, {
+        members: arrayUnion(user?.uid),
+        member: currentmember + 1,
+      });
 
       console.log("Joined  successfully.");
     } catch (error) {
@@ -247,7 +252,7 @@ const Message = () => {
             </TouchableOpacity>
           </View>
         ) : loading ? (
-          <ActivityIndicator />
+          <ActivityIndicator size={"large"} />
         ) : (
           <TouchableOpacity
             style={styles.joinContainer}
