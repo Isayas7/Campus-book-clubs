@@ -25,13 +25,13 @@ Welcome to the Campus Book Club App, where book lovers on campus can connect, di
   <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image1.jpg" alt="Join Discussion" width="250"  height="500">
 
   <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image2.jpg" alt="Recommend Book" width="250" height="500">
-
+    <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image7.jpg" alt="Profile" width="250" height="500">
   <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image3.jpg" alt="Search Books" width="250" height="500">
 
   <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image4.jpg" alt="Profile" width="250" height="500">
   <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image5.jpg" alt="Profile" width="250" height="500">
   <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image6.jpg" alt="Profile" width="250" height="500">
-    <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image7.jpg" alt="Profile" width="250" height="500">
+
 </div>
 
 
