@@ -16,22 +16,22 @@ Welcome to the Campus Book Club App, where book lovers on campus can connect, di
 
 7. **Search Book or clubs**: Easily find specific books or clubs through the search function .
 
-8.  **Profile**: Manage your profile according to your preferences.
+8.  **Profile**: Manage your profile according to your preferences and more functionality
 
 ## Some screen Images
 
 <div style="display: flex; gap: 40px;">
 
-  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image1.jpg" alt="Join Discussion" width="300"  height="550">
+  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image1.jpg" alt="Join Discussion" width="250"  height="500">
 
-  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image2.jpg" alt="Recommend Book" width="300" height="550">
+  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image2.jpg" alt="Recommend Book" width="250" height="500">
 
-  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image3.jpg" alt="Search Books" width="300" height="550">
+  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image3.jpg" alt="Search Books" width="250" height="500">
 
-  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image4.jpg" alt="Profile" width="300" height="550">
-  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image5.jpg" alt="Profile" width="300" height="550">
-  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image6.jpg" alt="Profile" width="300" height="550">
-    <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image7.jpg" alt="Profile" width="300" height="550">
+  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image4.jpg" alt="Profile" width="250" height="500">
+  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image5.jpg" alt="Profile" width="250" height="500">
+  <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image6.jpg" alt="Profile" width="250" height="500">
+    <img src="https://github.com/Isayas7/Campus-book-clubs/blob/main/images/image7.jpg" alt="Profile" width="250" height="500">
 </div>
 
 
