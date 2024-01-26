@@ -1,20 +1,22 @@
-import { View, Text } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import { Redirect, router } from "expo-router";
-import CustomTouchableOpacity from "../components/TouchableOpacity/CustomTouchableOpacity";
-import CustomText from "../components/Text/CustomText";
+import { AuthContext } from "../context/AuthContext";
+import { ActivityIndicator } from "react-native";
 
 const index = () => {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <CustomTouchableOpacity onPress={() => router.push("/login")}>
-        <CustomText>Login</CustomText>
-      </CustomTouchableOpacity>
-      <CustomTouchableOpacity onPress={() => router.push("/(tabs)/home")}>
-        <CustomText>Home</CustomText>
-      </CustomTouchableOpacity>
-    </View>
-  );
+  const { isLoading, authenticated } = useContext(AuthContext);
+  if (isLoading) {
+    return (
+      <ActivityIndicator
+        style={{ justifyContent: "center", alignItems: "center" }}
+        size={"large"}
+      />
+    );
+  } else if (authenticated) {
+    return <Redirect href="/(tabs)/home" />;
+  } else if (!authenticated) {
+    return <Redirect href="/login" />;
+  }
 };
 
 export default index;

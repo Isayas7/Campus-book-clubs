@@ -21,7 +21,7 @@ import {
 import { router } from "expo-router";
 import { AuthContext } from "../../../context/AuthContext";
 import * as ImagePicker from "expo-image-picker";
-import { ClubData, clubProps } from "../../../types/types";
+import { ClubType } from "../../../types/types";
 import { ImageViewer } from "../../../components/ImageViewer/ImageViewer";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../firebaseConfig";
@@ -38,13 +38,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CreateClub = () => {
   const { user } = useContext(AuthContext);
-  const [clubs, setClubs] = useState<ClubData>();
+  const [clubs, setClubs] = useState<ClubType>();
 
-  const [selectedImage, setSelectedImage] = useState<string>("");
+  // const [selectedImage, setSelectedImage] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const [file, setFile] = useState<File>();
   const [loading, setLoading] = useState(false);
 
-  const { control, handleSubmit, setValue } = useForm<clubProps>();
+  const { control, handleSubmit, setValue } = useForm<ClubType>();
 
   let clubId: string = "";
 
@@ -108,7 +110,7 @@ const CreateClub = () => {
     }
   };
 
-  const crateClubs = async (data: clubProps) => {
+  const crateClubs = async (data: ClubType) => {
     setLoading(true);
     try {
       const storageRef = ref(FIRBASE_STORAGE, "Clubs/" + file?.name);
@@ -116,11 +118,11 @@ const CreateClub = () => {
 
       const photoURL = await getDownloadURL(storageRef);
       const RequestData = {
+        ...data,
         creater: user?.uid,
         photoURL,
         members: [],
         createdAt: serverTimestamp(),
-        ...data,
       };
       if (photoURL) {
         await addDoc(collection(FIRBASE_DB, "Clubs"), RequestData);
@@ -134,7 +136,7 @@ const CreateClub = () => {
     }
   };
 
-  const updateGroup = async (data: clubProps) => {
+  const updateGroup = async (data: ClubType) => {
     setLoading(true);
     if (file) {
       const storageRef = ref(FIRBASE_STORAGE, "Clubs/" + file?.name);

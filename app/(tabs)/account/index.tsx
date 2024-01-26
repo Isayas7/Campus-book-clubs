@@ -1,5 +1,5 @@
 import { View, StyleSheet, Pressable, ActivityIndicator } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
 import { Stack, router } from "expo-router";
 import AccountHeader from "../../../components/AccountHeader";
@@ -21,11 +21,23 @@ import {
 } from "@expo/vector-icons";
 import { AuthContext } from "../../../context/AuthContext";
 import { signOut } from "firebase/auth";
-import { FIREBASE_AUTH } from "../../../firebaseConfig";
+import { FIRBASE_DB, FIREBASE_AUTH } from "../../../firebaseConfig";
+import {
+  DocumentData,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { bookType, ClubType } from "../../../types/types";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const Settings = () => {
-  const { isLoading, data } = useContext(AuthContext);
+  const { isLoading, data, user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
+  const [books, setBooks] = useState<bookType[]>([]);
+  const [clubs, setClubs] = useState<ClubType[]>([]);
 
   const Logout = async () => {
     setLoading(true);
@@ -37,6 +49,39 @@ const Settings = () => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    const bookQuery = query(
+      collection(FIRBASE_DB, "Books"),
+      where("creater", "==", user?.uid)
+    );
+
+    const booksData = onSnapshot(bookQuery, (docSnap: DocumentData) => {
+      const data = docSnap.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setBooks(data);
+    });
+
+    const clubQuery = query(
+      collection(FIRBASE_DB, "Clubs"),
+      where("creater", "==", user?.uid)
+    );
+
+    const clubData = onSnapshot(clubQuery, (docSnap: DocumentData) => {
+      const data = docSnap.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setClubs(data);
+    });
+
+    return () => {
+      booksData();
+      clubData();
+    };
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.newBackground }}>
@@ -50,24 +95,36 @@ const Settings = () => {
 
         <View style={styles.cardContiner}>
           <Card style={{ width: wp("29%") }}>
-            <CustomText style={styles.cardHeader}>Clubs</CustomText>
-            <CustomText size="large" style={styles.cardNumber}>
-              10
-            </CustomText>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/account/clubs")}
+            >
+              <CustomText style={styles.cardHeader}>Clubs</CustomText>
+              <CustomText size="large" style={styles.cardNumber}>
+                {clubs?.length}
+              </CustomText>
+            </TouchableOpacity>
           </Card>
 
           <Card style={{ width: wp("29%") }}>
-            <CustomText style={styles.cardHeader}>Books</CustomText>
-            <CustomText size="large" style={styles.cardNumber}>
-              6
-            </CustomText>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/account/Books")}
+            >
+              <CustomText style={styles.cardHeader}>Books</CustomText>
+              <CustomText size="large" style={styles.cardNumber}>
+                {books?.length}
+              </CustomText>
+            </TouchableOpacity>
           </Card>
 
           <Card style={{ width: wp("29%") }}>
-            <CustomText style={styles.cardHeader}>Photos</CustomText>
-            <CustomText size="large" style={styles.cardNumber}>
-              3
-            </CustomText>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/account/Photos")}
+            >
+              <CustomText style={styles.cardHeader}>Photos</CustomText>
+              <CustomText size="large" style={styles.cardNumber}>
+                {data?.photoUrl.length}
+              </CustomText>
+            </TouchableOpacity>
           </Card>
         </View>
 

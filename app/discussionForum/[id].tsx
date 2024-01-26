@@ -20,7 +20,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { FIRBASE_DB } from "../../firebaseConfig";
-import { ClubData } from "../../types/types";
+import { ClubType } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native";
 import {
@@ -40,7 +40,7 @@ const DiscussionForum = () => {
   const { user } = useContext(AuthContext);
 
   const { id } = useLocalSearchParams();
-  const [clubs, setClubs] = useState<ClubData>();
+  const [clubs, setClubs] = useState<ClubType>();
   const [messageLoading, setMessageLoading] = useState<boolean>(true);
   const [messages, setMessages] = useState<DocumentData[]>([]);
   const [message, setMessage] = useState<string>("");

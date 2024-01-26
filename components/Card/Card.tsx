@@ -10,7 +10,11 @@ const StyledCard = styled.View`
 `;
 
 const Card: React.FC<CardProps> = (props) => {
-  return <StyledCard style={props.style}>{props.children}</StyledCard>;
+  return (
+    <StyledCard style={props.style} {...props}>
+      {props.children}
+    </StyledCard>
+  );
 };
 
 export default Card;

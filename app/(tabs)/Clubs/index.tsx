@@ -19,12 +19,10 @@ import {
 import { StyleSheet } from "react-native";
 import Colors from "../../../constants/Colors";
 import Container from "../../../components/container/Container";
-import CustomTextInput from "../../../components/TextInput/CustomTextInput";
 import CustomText from "../../../components/Text/CustomText";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import { Link } from "expo-router";
-import { useForm } from "react-hook-form";
-import { backendClubProps } from "../../../types/types";
+import { ClubType, bookType } from "../../../types/types";
 import {
   DocumentData,
   collection,
@@ -40,10 +38,10 @@ import { AuthContext } from "../../../context/AuthContext";
 
 const Clubs = () => {
   const { user } = useContext(AuthContext);
-  const { control } = useForm();
-  const [clubs, setClubs] = useState([]);
-  const [topClubs, setTopClubs] = useState([]);
+  const [clubs, setClubs] = useState<bookType[]>([]);
+  const [topClubs, setTopClubs] = useState<bookType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recommendloading, setRecommendloading] = useState(true);
   const [text, setText] = useState<string>();
 
   useEffect(() => {
@@ -77,15 +75,13 @@ const Clubs = () => {
 
       setTopClubs(clubs);
     });
-
-    return () => {
-      unsubscribe();
-    };
+    setRecommendloading(false);
+    return () => unsubscribe();
   }, []);
 
-  const keyExtractor = (item: backendClubProps, index: number) => item.id;
+  const keyExtractor = (item: ClubType, index: number) => item.id;
 
-  const renderHorizontaItem = ({ item }: { item: backendClubProps }) => {
+  const renderHorizontaItem = ({ item }: { item: ClubType }) => {
     return (
       <View>
         {item.photoURL ? (
@@ -100,7 +96,7 @@ const Clubs = () => {
       </View>
     );
   };
-  const renderVerticalItem = ({ item }: { item: backendClubProps }) => {
+  const renderVerticalItem = ({ item }: { item: ClubType }) => {
     return (
       <Link key={item.id} href={`/message/${item.id}`} asChild>
         <TouchableOpacity style={styles.books}>
@@ -118,7 +114,7 @@ const Clubs = () => {
                 {item?.members?.includes(user?.uid) ||
                 user?.uid === item.creater
                   ? item.lastMessage
-                  : item.members?.length}
+                  : item.members?.length + " members"}
               </Text>
             )}
           </View>
@@ -161,12 +157,21 @@ const Clubs = () => {
           />
           <AntDesign name="search1" size={24} color={Colors.background} />
         </View>
+        {topClubs?.length !== 0 ? (
+          <CustomText variant="black" style={styles.recomendText}>
+            Recommended
+          </CustomText>
+        ) : (
+          clubs?.length !== 0 && (
+            <CustomText
+              style={{ textAlign: "center", color: Colors.background }}
+            >
+              There is no recommended club for you yet.
+            </CustomText>
+          )
+        )}
 
-        <CustomText variant="black" style={styles.recomendText}>
-          Recommended
-        </CustomText>
-
-        {loading ? (
+        {recommendloading ? (
           <ActivityIndicator size={"large"} />
         ) : (
           <CustomFlatList
@@ -178,10 +183,15 @@ const Clubs = () => {
             horizontal
           />
         )}
-
-        <CustomText variant="black" style={styles.recomendText}>
-          Clubs
-        </CustomText>
+        {clubs?.length !== 0 ? (
+          <CustomText variant="black" style={styles.recomendText}>
+            Clubs
+          </CustomText>
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            There is no clubs
+          </CustomText>
+        )}
 
         {loading ? (
           <ActivityIndicator size={"large"} />

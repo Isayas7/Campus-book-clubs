@@ -20,7 +20,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { ImageViewer } from "../../../components/ImageViewer/ImageViewer";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { FIRBASE_DB, FIRBASE_STORAGE } from "../../../firebaseConfig";
-import { bookType, uploadbookType } from "../../../types/types";
+import { bookType } from "../../../types/types";
 import {
   DocumentData,
   addDoc,
@@ -35,7 +35,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const UploadBook = () => {
   const { user } = useContext(AuthContext);
-  const [books, setBooks] = useState<uploadbookType>();
+  const [books, setBooks] = useState<bookType>();
 
   const [selectedFileName, setSelectedFileName] = useState<string>();
   const [selectedImage, setSelectedImage] = useState<string | null>();
@@ -45,7 +45,7 @@ const UploadBook = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const { control, setValue, handleSubmit } = useForm<uploadbookType>();
+  const { control, setValue, handleSubmit } = useForm<bookType>();
 
   let bookId: string = "";
 
@@ -75,6 +75,7 @@ const UploadBook = () => {
     if (books) {
       setValue("bookAuthor", books.bookAuthor || "");
       setValue("bookTitle", books.bookTitle || "");
+      setValue("aboutBook", books.aboutBook || "");
     }
   }, [books, setValue]);
 
@@ -130,7 +131,7 @@ const UploadBook = () => {
     }
   };
 
-  const upLoadBook = async (data: uploadbookType) => {
+  const upLoadBook = async (data: bookType) => {
     setLoading(true);
     try {
       const storageRefPdf = ref(
@@ -149,9 +150,9 @@ const UploadBook = () => {
       const photoURL = await getDownloadURL(storageRefImg);
 
       const RequestData = {
-        creater: user?.uid,
         createdAt: serverTimestamp(),
         ...data,
+        creater: user?.uid,
         photoURL,
         pdfURL,
       };
@@ -167,7 +168,7 @@ const UploadBook = () => {
     }
   };
 
-  const updateBook = async (data: uploadbookType) => {
+  const updateBook = async (data: bookType) => {
     setLoading(true);
     if (blobImgFile && blobPdfFile) {
       const storageRefPdf = ref(FIRBASE_STORAGE, "Books/" + blobPdfFile?.name);
@@ -268,6 +269,14 @@ const UploadBook = () => {
             placeholder="Enter Author of the book"
             control={control}
             name="bookAuthor"
+          ></CustomTextInput>
+        </View>
+        <View>
+          <CustomText style={styles.text}>About</CustomText>
+          <CustomTextInput
+            placeholder="Write about the book"
+            control={control}
+            name="aboutBook"
           ></CustomTextInput>
         </View>
         <View>

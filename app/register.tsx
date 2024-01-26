@@ -19,17 +19,18 @@ import CustomTextInput from "../components/TextInput/CustomTextInput";
 import CustomTouchableOpacity from "../components/TouchableOpacity/CustomTouchableOpacity";
 import Colors from "../constants/Colors";
 import { useForm } from "react-hook-form";
-import { Signup } from "../services/Auth";
-import { FormData } from "../types/types";
+import { userType } from "../types/types";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { FIRBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
-  const { control, handleSubmit } = useForm<FormData>();
+  const { control, handleSubmit, watch } = useForm<userType>();
   const [loading, setLoading] = useState(false);
 
-  const Signup = async (userData: FormData) => {
+  const repeatPaasword = watch("password");
+
+  const Signup = async (userData: userType) => {
     setLoading(true);
     try {
       const response = await createUserWithEmailAndPassword(
@@ -80,13 +81,24 @@ const Register = () => {
           placeholder="password"
           secureTextEntry
         />
+        <CustomTextInput
+          control={control}
+          name="repeatPassword"
+          rules={{
+            validate: (value: any) =>
+              value === repeatPaasword || "password does not match",
+          }}
+          style={styles.input}
+          placeholder="repeat password"
+          secureTextEntry
+        />
 
         <CustomTouchableOpacity
           style={styles.button}
           onPress={handleSubmit(Signup)}
         >
           {loading ? (
-            <ActivityIndicator size={wf("4.5%")} />
+            <ActivityIndicator style={{ padding: 5 }} />
           ) : (
             <CustomText>Sign up</CustomText>
           )}

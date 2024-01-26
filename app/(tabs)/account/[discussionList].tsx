@@ -4,12 +4,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import {
   DocumentData,
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   orderBy,
@@ -23,7 +26,7 @@ import {
   heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ClubData, discussionTypes } from "../../../types/types";
+import { discussionTypes } from "../../../types/types";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
@@ -37,7 +40,9 @@ const DiscussionList = () => {
   const { discussionList: id } = useLocalSearchParams();
   const [discussion, setDisscussins] = useState([]);
   const [loadingDiscussions, setLoadingDiscussions] = useState(true);
-
+  const [visible, setVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState<string>();
+  const [deleteloading, setDeleteloading] = useState(false);
   const storeData = async () => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
@@ -89,14 +94,26 @@ const DiscussionList = () => {
       console.error("Error storing data:", error);
     }
   };
-  const deleteDiscussion = async (id: string) => {
-    // const clubDoc = doc(FIRBASE_DB, "Clubs", id);
-    // try {
-    //   await deleteDoc(clubDoc);
-    //   console.log("clubs successfully deleted");
-    // } catch (error) {
-    //   console.log("clubs not deleted");
-    // }
+  const deleteDiscussion = async () => {
+    setDeleteloading(true);
+    const discussionDoc = doc(
+      FIRBASE_DB,
+      `Clubs/${id}/discussions/${deleteId}`
+    );
+    try {
+      await deleteDoc(discussionDoc);
+      setDeleteloading(false);
+      console.log("clubs successfully deleted");
+    } catch (error) {
+      console.log("clubs not deleted");
+    }
+    setDeleteloading(false);
+    setVisible(false);
+  };
+
+  const handleModal = (id: string) => {
+    setVisible(true);
+    setDeleteId(id);
   };
 
   const keyExtractor = (item: discussionTypes, index: number) =>
@@ -136,7 +153,7 @@ const DiscussionList = () => {
             <Entypo name="edit" size={24} color="blue" />
           </TouchableOpacity>
           <TouchableOpacity
-            // onPress={() => deleteGroup(item.id)}
+            onPress={() => handleModal(item.id)}
             style={{ paddingHorizontal: 4 }}
           >
             <AntDesign name="delete" size={24} color="red" />
@@ -186,6 +203,47 @@ const DiscussionList = () => {
             </CustomText>
           )}
         </Container>
+        <Modal transparent visible={visible}>
+          <TouchableWithoutFeedback onPress={() => setVisible(!visible)}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: Colors.background,
+                  padding: 10,
+                  borderRadius: 10,
+                }}
+              >
+                <CustomText>Are you sure?</CustomText>
+                <View
+                  style={{
+                    marginTop: 10,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginHorizontal: 6,
+                    alignItems: "center",
+                  }}
+                >
+                  <TouchableOpacity onPress={() => setVisible(false)}>
+                    <CustomText>No</CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => deleteDiscussion()}>
+                    {deleteloading ? (
+                      <ActivityIndicator size={"small"} />
+                    ) : (
+                      <CustomText>Yes</CustomText>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     </View>
   );

@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
-import React, { useContext } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useContext, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomTextInput from "../../../components/TextInput/CustomTextInput";
 import { useForm } from "react-hook-form";
@@ -14,22 +14,35 @@ import {
 } from "react-native-responsive-screen-font";
 import { AuthContext } from "../../../context/AuthContext";
 import { passwordChangeProps } from "../../../types/types";
+import { doc, updateDoc } from "firebase/firestore";
+import { FIRBASE_DB } from "../../../firebaseConfig";
 
 const ChangePassword = () => {
+  const [loading, setLoading] = useState(false);
   const { user } = useContext(AuthContext);
 
   const { control, handleSubmit } = useForm<passwordChangeProps>();
-  // const onSubmit = (data: passwordChangeProps) => {
-  //   if (user) {
-  //     console.log("from usename", data.userName);
 
-  //     mutate({ id: user?.uid, username: data.userName });
+  // const updateUserName = async (data: passwordChangeProps) => {
+  //   if (user) {
+  //     setLoading(true);
+  //     const docRef = doc(FIRBASE_DB, "users", user.uid);
+
+  //     try {
+  //       await updateDoc(docRef, {
+  //         userName: data.newPassword,
+  //       });
+  //       setLoading(false);
+  //       router.push("/(tabs)/account");
+  //       console.log("user updating successfully");
+  //     } catch (error) {
+  //       console.error("Error updating user :", error);
+  //     }
   //   }
   // };
 
-  // const { mutate } = useMutation(updateUserName);
   return (
-    <View style={styles.wrapper}>
+    <ScrollView style={styles.wrapper}>
       <Container style={styles.container}>
         <View>
           <CustomText style={styles.text}>Old Password</CustomText>
@@ -60,7 +73,7 @@ const ChangePassword = () => {
           <CustomText>Change</CustomText>
         </CustomTouchableOpacity>
       </Container>
-    </View>
+    </ScrollView>
   );
 };
 

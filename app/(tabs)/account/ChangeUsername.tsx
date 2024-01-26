@@ -17,12 +17,13 @@ import { usenameChangeProps } from "../../../types/types";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import { router } from "expo-router";
+import { ScrollView } from "react-native-gesture-handler";
 
 const ChangeUsername = () => {
+  const [loading, setLoading] = useState(false);
   const { user } = useContext(AuthContext);
 
   const { control, handleSubmit } = useForm<usenameChangeProps>();
-  const [loading, setLoading] = useState(false);
 
   const updateUserName = async (data: usenameChangeProps) => {
     if (user) {
@@ -43,7 +44,7 @@ const ChangeUsername = () => {
   };
 
   return (
-    <View style={styles.wrapper}>
+    <ScrollView showsVerticalScrollIndicator={false} style={styles.wrapper}>
       <Container style={styles.container}>
         <View>
           <CustomText style={styles.text}>Username</CustomText>
@@ -70,7 +71,7 @@ const ChangeUsername = () => {
           )}
         </CustomTouchableOpacity>
       </Container>
-    </View>
+    </ScrollView>
   );
 };
 

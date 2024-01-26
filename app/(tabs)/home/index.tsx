@@ -20,8 +20,6 @@ import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import { router } from "expo-router";
-import { useForm } from "react-hook-form";
-import { AuthContext } from "../../../context/AuthContext";
 import {
   DocumentData,
   collection,
@@ -36,15 +34,12 @@ import { TextInput } from "react-native-gesture-handler";
 import { AntDesign } from "@expo/vector-icons";
 
 const Home = () => {
-  const { isLoading, authenticated } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
-  const [text, setText] = useState<string>();
-  const [books, setBooks] = useState();
-  const [topViewedBooks, setTopViewedBooks] = useState();
+  const [recommendloading, setRecommendloading] = useState(true);
 
-  // if (!authenticated) {
-  //   return <Redirect href="/login" />;
-  // }
+  const [text, setText] = useState<string>();
+  const [books, setBooks] = useState<bookType[]>([]);
+  const [topViewedBooks, setTopViewedBooks] = useState<bookType[]>([]);
 
   useEffect(() => {
     const docRef = collection(FIRBASE_DB, "Books");
@@ -77,26 +72,26 @@ const Home = () => {
     );
 
     const unsubscribe = onSnapshot(queryBooks, (querySnapshot) => {
-      const books = querySnapshot.docs.map((doc: any) => ({
+      const books = querySnapshot.docs.map((doc: DocumentData) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
       setTopViewedBooks(books);
+      const delayTimer = setTimeout(() => {
+        setRecommendloading(false);
+      }, 1000);
+
+      return () => {
+        clearTimeout(delayTimer);
+        unsubscribe();
+      };
     });
 
     return () => {
       unsubscribe();
     };
   }, []);
-
-  if (isLoading || loading)
-    return (
-      <ActivityIndicator
-        size={"large"}
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      />
-    );
 
   const keys = ["bookTitle", "bookAuthor"];
 
@@ -160,24 +155,43 @@ const Home = () => {
           <AntDesign name="search1" size={24} color={Colors.background} />
         </View>
 
-        <CustomText variant="black" style={styles.recomendText}>
-          Recommended
-        </CustomText>
-        <CustomFlatList
-          data={topViewedBooks}
-          renderItem={renderHorizontaItem}
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.flatListContainer}
-          horizontal
-        />
-
-        <CustomText variant="black" style={styles.recomendText}>
-          Books
-        </CustomText>
+        {topViewedBooks?.length !== 0 ? (
+          <CustomText variant="black" style={styles.recomendText}>
+            Recommended
+          </CustomText>
+        ) : (
+          books?.length !== 0 && (
+            <CustomText
+              style={{ textAlign: "center", color: Colors.background }}
+            >
+              There is no recommended book for you yet.
+            </CustomText>
+          )
+        )}
+        {books?.length !== 0 && recommendloading ? (
+          <ActivityIndicator size={"large"} />
+        ) : (
+          <CustomFlatList
+            data={topViewedBooks}
+            renderItem={renderHorizontaItem}
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.flatListContainer}
+            horizontal
+          />
+        )}
+        {books?.length !== 0 ? (
+          <CustomText variant="black" style={styles.recomendText}>
+            Books
+          </CustomText>
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            There is no books
+          </CustomText>
+        )}
 
         {loading ? (
-          <ActivityIndicator />
+          <ActivityIndicator size={"large"} />
         ) : (
           <CustomFlatList
             data={text ? handleSearch(books) : books}

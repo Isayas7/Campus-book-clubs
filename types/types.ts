@@ -1,6 +1,7 @@
-export type FormData = {
+export type userType = {
   email: string;
   password: string;
+  repeatNewPassword: string;
   userName: string;
   photoUrl?: string;
 };
@@ -16,28 +17,18 @@ export type passwordChangeProps = {
   repeatNewPassword: string;
 };
 
-export type clubProps = {
-  about: string;
-  clubName: string;
-};
-
-export type uploadbookType = {
-  bookAuthor: string;
-  bookTitle: string;
-  photoURL: string;
-  pdfURL: string;
-};
-
 export type bookType = {
   id: string;
   bookAuthor: string;
   bookTitle: string;
   creater: string;
+  aboutBook: string;
   pdfURL: string;
   photoURL: string;
+  length: number;
 };
 
-export type backendClubProps = {
+export type ClubType = {
   id: string;
   about: string;
   clubName: string;
@@ -45,28 +36,13 @@ export type backendClubProps = {
   creater: string;
   members?: string[];
   lastMessage: any;
-};
-
-export type ClubData = {
-  id: string;
-  about: string;
-  clubName: string;
-  creater: string;
-  members: string[];
-  photoURL: string;
   from: string;
-};
-
-export type userProps = {
-  photoUrl: string[];
-  userName: string;
 };
 
 export type discussionTypes = {
   id: string;
   bookAuther: string;
   bookTitle: string;
-  // creater: string;
   photoURL: string;
   day: string;
   startTime: string;

@@ -20,15 +20,15 @@ import CustomTouchableOpacity from "../components/TouchableOpacity/CustomTouchab
 import CustomTextInput from "../components/TextInput/CustomTextInput";
 import Container from "../components/container/Container";
 import { useForm } from "react-hook-form";
-import { FormData } from "../types/types";
+import { userType } from "../types/types";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { FIREBASE_AUTH } from "../firebaseConfig";
 
 const Login = () => {
-  const { control, handleSubmit } = useForm<FormData>();
+  const { control, handleSubmit } = useForm<userType>();
   const [loading, setLoading] = useState(false);
 
-  const Signin = async (userData: FormData) => {
+  const Signin = async (userData: userType) => {
     setLoading(true);
     try {
       const data = await signInWithEmailAndPassword(

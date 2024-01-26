@@ -75,9 +75,19 @@ const Recent = () => {
       <StatusBar style="light" backgroundColor={Colors.background} />
 
       <Container style={{ gap: 10, marginTop: 12 }}>
-        <CustomText size="large" variant="black" style={{ textAlign: "left" }}>
-          Your recent reading
-        </CustomText>
+        {recentBooks?.length !== 0 ? (
+          <CustomText
+            size="large"
+            style={{ textAlign: "center", color: Colors.background }}
+          >
+            Your recent reading
+          </CustomText>
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            You are not read a books yet
+          </CustomText>
+        )}
+
         {loading ? (
           <ActivityIndicator size={"large"} />
         ) : (

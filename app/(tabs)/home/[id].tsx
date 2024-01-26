@@ -112,10 +112,10 @@ const Id = () => {
           </CustomText>
 
           <CustomText size="small" variant="black" style={styles.description}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium
-            alias quidem autem architecto rerum minus, praesentium at illo
-            nesciunt non quibusdam mollitia neque nemo magni delectus inventore
-            expedita doloremque aut?
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eaque
+            aperiam consequuntur exercitationem earum est ea ipsum voluptas quis
+            hic aliquid alias adipisci, quibusdam eligendi incidunt itaque
+            nostrum! Nostrum, explicabo.
           </CustomText>
 
           <CustomTouchableOpacity

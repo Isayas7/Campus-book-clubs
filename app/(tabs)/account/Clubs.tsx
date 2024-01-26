@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
@@ -35,18 +37,14 @@ import {
 } from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-interface ClubType {
-  id: string;
-  url: string;
-  clubName: string;
-  photoURL: string[];
-  members: string[];
-}
+import { ClubType } from "../../../types/types";
 
 const Clubs = () => {
   const [clubs, setClubs] = useState<ClubType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visible, setVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState<string>();
+  const [deleteloading, setDeleteloading] = useState(false);
   const { data: userData, user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -87,19 +85,30 @@ const Clubs = () => {
       console.error("Error storing data:", error);
     }
   };
-  const deleteGroup = async (id: string) => {
-    // const clubDoc = doc(FIRBASE_DB, "Clubs", id);
-    // try {
-    //   await deleteDoc(clubDoc);
-    //   console.log("clubs successfully deleted");
-    // } catch (error) {
-    //   console.log("clubs not deleted");
-    // }
+
+  const deleteGroup = async () => {
+    setDeleteloading(true);
+    const clubDoc = doc(FIRBASE_DB, `Clubs/${deleteId}`);
+
+    try {
+      await deleteDoc(clubDoc);
+      setDeleteloading(false);
+      console.log("clubs successfully deleted");
+    } catch (error) {
+      console.log("book not deleted");
+    }
+    setDeleteloading(false);
+    setVisible(false);
+  };
+
+  const handleModal = (id: string) => {
+    setVisible(true);
+    setDeleteId(id);
   };
 
   const clubItems = clubs.map((club) => ({
     id: club.id,
-    url: club.photoURL,
+    photoURL: club.photoURL,
     clubName: club.clubName,
     members: club.members,
   }));
@@ -109,6 +118,7 @@ const Clubs = () => {
   const keyExtractor = (item: ClubType, index: number) => item.id.toString();
 
   const renderVerticalItem = ({ item }: { item: ClubType }) => {
+    console.log("item2", item);
     return (
       <View
         style={{
@@ -124,7 +134,7 @@ const Clubs = () => {
           onPress={() => router.push(`/message/${item.id}`)}
           style={styles.books}
         >
-          <Image source={{ uri: item?.url }} style={styles.groupImage} />
+          <Image source={{ uri: item?.photoURL }} style={styles.groupImage} />
           <View style={styles.booksDesc}>
             <CustomText variant="black" size="medium" style={styles.title}>
               {item?.clubName}
@@ -150,12 +160,53 @@ const Clubs = () => {
             <Entypo name="edit" size={24} color="blue" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => deleteGroup(item.id)}
+            onPress={() => handleModal(item.id)}
             style={{ paddingHorizontal: 4 }}
           >
             <AntDesign name="delete" size={24} color="red" />
           </TouchableOpacity>
         </View>
+        <Modal transparent visible={visible}>
+          <TouchableWithoutFeedback onPress={() => setVisible(!visible)}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: Colors.background,
+                  padding: 10,
+                  borderRadius: 10,
+                }}
+              >
+                <CustomText>Are you sure?</CustomText>
+                <View
+                  style={{
+                    marginTop: 10,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginHorizontal: 6,
+                    alignItems: "center",
+                  }}
+                >
+                  <TouchableOpacity onPress={() => setVisible(false)}>
+                    <CustomText>No</CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => deleteGroup()}>
+                    {deleteloading ? (
+                      <ActivityIndicator size={"small"} />
+                    ) : (
+                      <CustomText>Yes</CustomText>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     );
   };
@@ -183,7 +234,7 @@ const Clubs = () => {
         <Container style={{ marginBottom: hp("25%") }}>
           {loading ? (
             <ActivityIndicator size={"large"} />
-          ) : (
+          ) : clubs.length !== 0 ? (
             <CustomFlatList
               data={validClubItems}
               renderItem={renderVerticalItem}
@@ -191,6 +242,12 @@ const Clubs = () => {
               keyExtractor={keyExtractor}
               contentContainerStyle={styles.flatListContainer}
             />
+          ) : (
+            <CustomText
+              style={{ textAlign: "center", color: Colors.background }}
+            >
+              You have not a clubs yet
+            </CustomText>
           )}
         </Container>
       </View>

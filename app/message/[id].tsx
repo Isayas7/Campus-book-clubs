@@ -30,7 +30,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { FIRBASE_DB, FIREBASE_AUTH } from "../../firebaseConfig";
+import { FIRBASE_DB } from "../../firebaseConfig";
 import Colors from "../../constants/Colors";
 import MessageHeader from "../../components/MessageHeader";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
@@ -41,15 +41,14 @@ import {
   heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import CustomText from "../../components/Text/CustomText";
-import { ClubData } from "../../types/types";
-import { Keyboard } from "react-native";
+import { ClubType } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Message = () => {
   const { user } = useContext(AuthContext);
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [clubs, setClubs] = useState<ClubData>();
+  const [clubs, setClubs] = useState<ClubType>();
   const [messages, setMessages] = useState<DocumentData[]>([]);
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -180,7 +179,7 @@ const Message = () => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 25}
-      style={{ flex: 1, backgroundColor: Colors.newBackground }}
+      style={{ flex: 1, backgroundColor: Colors.newBackground, marginTop: 57 }}
     >
       <Stack.Screen
         options={{

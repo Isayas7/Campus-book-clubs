@@ -21,12 +21,11 @@ export const AuthContext = createContext<AuthContextType>({});
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [data, setData] = useState<userProps | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     if (user) {
-      setIsLoading(true);
       const docRef = doc(FIRBASE_DB, "users", user?.uid);
 
       const unsubscribe = onSnapshot(docRef, (docSnap: DocumentData) => {
@@ -48,8 +47,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (authUser) {
         setUser(authUser);
         setAuthenticated(true);
+        setIsLoading(false);
+      } else if (!authUser) {
+        setIsLoading(false);
       }
     });
+
     return () => unsubscribe();
   }, []);
 

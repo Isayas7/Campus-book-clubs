@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Colors from "../constants/Colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "../context/AuthContext";
-import { UserProvider } from "../context/UserContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -13,7 +12,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -46,27 +45,23 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const queryClient = new QueryClient();
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Stack
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: Colors.background,
-            },
-            headerTintColor: Colors.white,
+    <AuthProvider>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: Colors.background,
+          },
+          headerTintColor: Colors.white,
+        }}
+      >
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
           }}
-        >
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-            }}
-          />
-        </Stack>
-      </AuthProvider>
-    </QueryClientProvider>
+        />
+      </Stack>
+    </AuthProvider>
   );
 }

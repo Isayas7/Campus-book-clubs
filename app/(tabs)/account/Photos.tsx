@@ -18,7 +18,7 @@ import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomT
 import { router } from "expo-router";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import { AuthContext } from "../../../context/AuthContext";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { ImageViewer } from "../../../components/ImageViewer/ImageViewer";
 import * as ImagePicker from "expo-image-picker";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -37,7 +37,8 @@ interface PhotosProps {
 }
 
 const Photos: React.FC<PhotosProps> = () => {
-  const { data: userData, user } = useContext(AuthContext);
+  const { data: userData, user, isLoading } = useContext(AuthContext);
+  // const [selectedImage, setSelectedImage] = useState<string>("");
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [file, setFile] = useState<File>();
@@ -99,12 +100,12 @@ const Photos: React.FC<PhotosProps> = () => {
 
   const keyExtractor = (item: PhotoItem, index: number) => index.toString();
 
-  const numColumns = 3;
+  const numColumns = 2;
 
   const renderVerticalItem = ({ item }: { item: PhotoItem }) => {
     const columnWidth = wp(100) / numColumns - 7;
     return (
-      <TouchableOpacity onPress={() => router.push(`/home/${item.id}`)}>
+      <TouchableOpacity>
         <View
           style={{
             width: columnWidth,
@@ -123,7 +124,10 @@ const Photos: React.FC<PhotosProps> = () => {
   const reversedPhotoItems = photoItems ? [...photoItems].reverse() : [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.newBackground }}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={{ flex: 1, backgroundColor: Colors.newBackground }}
+    >
       <Container style={styles.container}>
         <View style={styles.row}>
           <CustomText style={styles.text}>Profile pictures</CustomText>
@@ -144,17 +148,25 @@ const Photos: React.FC<PhotosProps> = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.separator} />
-        <CustomFlatList
-          style={{ marginBottom: 151 }}
-          data={reversedPhotoItems}
-          renderItem={renderVerticalItem}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={keyExtractor}
-          numColumns={numColumns}
-          contentContainerStyle={styles.flatListContainer}
-        />
+        {isLoading ? (
+          <ActivityIndicator size={"large"} />
+        ) : reversedPhotoItems.length !== 0 ? (
+          <CustomFlatList
+            style={{ marginBottom: 151 }}
+            data={reversedPhotoItems}
+            renderItem={renderVerticalItem}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={keyExtractor}
+            numColumns={numColumns}
+            contentContainerStyle={styles.flatListContainer}
+          />
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            You have not a photos yet
+          </CustomText>
+        )}
       </Container>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -173,9 +185,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   image: {
-    height: hp("14%"),
-    width: hp("14%"),
-    borderRadius: 200,
+    height: hp("20%"),
+    width: hp("20%"),
+    borderRadius: 10,
+    // objectFit: "",
   },
   text: {
     color: Colors.background,
@@ -187,7 +200,9 @@ const styles = StyleSheet.create({
   flatListContainer: {
     paddingHorizontal: 10,
     paddingVertical: 20,
-    justifyContent: "center",
+
+    justifyContent: "flex-end",
+    gap: 10,
   },
 });
 

@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
@@ -40,7 +42,11 @@ import { bookType } from "../../../types/types";
 const Books = () => {
   const [books, setBooks] = useState<bookType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reFetch, setReFetch] = useState(true);
+
+
+  const [visible, setVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState<string>();
+  const [deleteloading, setDeleteloading] = useState(false);
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -80,14 +86,25 @@ const Books = () => {
       console.error("Error storing data:", error);
     }
   };
-  const deletebook = async (id: string) => {
-    const bookDoc = doc(FIRBASE_DB, "Books", id);
+
+  const deletebook = async () => {
+    setDeleteloading(true);
+    const bookDoc = doc(FIRBASE_DB, `Books/${deleteId}`);
+
     try {
       await deleteDoc(bookDoc);
+      setDeleteloading(false);
       console.log("book successfully deleted");
     } catch (error) {
       console.log("book not deleted");
     }
+    setDeleteloading(false);
+    setVisible(false);
+  };
+
+  const handleModal = (id: string) => {
+    setVisible(true);
+    setDeleteId(id);
   };
 
   const clubItems = books.map((book) => ({
@@ -135,7 +152,7 @@ const Books = () => {
             <Entypo name="edit" size={24} color="blue" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => deletebook(item.id)}
+            onPress={() => handleModal(item.id)}
             style={{ paddingHorizontal: 4 }}
           >
             <AntDesign name="delete" size={24} color="red" />
@@ -168,7 +185,7 @@ const Books = () => {
         <Container style={{ marginBottom: hp("25%") }}>
           {loading ? (
             <ActivityIndicator size={"large"} />
-          ) : (
+          ) : validClubItems.length !== 0 ? (
             <CustomFlatList
               data={validClubItems}
               renderItem={renderVerticalItem}
@@ -176,8 +193,55 @@ const Books = () => {
               keyExtractor={keyExtractor}
               contentContainerStyle={styles.flatListContainer}
             />
+          ) : (
+            <CustomText
+              style={{ textAlign: "center", color: Colors.background }}
+            >
+              You have not a books yet
+            </CustomText>
           )}
         </Container>
+        <Modal transparent visible={visible}>
+          <TouchableWithoutFeedback onPress={() => setVisible(!visible)}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: Colors.background,
+                  padding: 10,
+                  borderRadius: 10,
+                }}
+              >
+                <CustomText>Are you sure?</CustomText>
+                <View
+                  style={{
+                    marginTop: 10,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginHorizontal: 6,
+                    alignItems: "center",
+                  }}
+                >
+                  <TouchableOpacity onPress={() => setVisible(false)}>
+                    <CustomText>No</CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => deletebook()}>
+                    {deleteloading ? (
+                      <ActivityIndicator size={"small"} />
+                    ) : (
+                      <CustomText>Yes</CustomText>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     </View>
   );

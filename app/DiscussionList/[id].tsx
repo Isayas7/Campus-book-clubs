@@ -1,8 +1,14 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import MessageHeader from "../../components/MessageHeader";
-import { ClubData, discussionTypes } from "../../types/types";
+import { ClubType, discussionTypes } from "../../types/types";
 import {
   DocumentData,
   collection,
@@ -28,7 +34,7 @@ import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 
 const DiscussionList = () => {
   const { id } = useLocalSearchParams();
-  const [clubs, setClubs] = useState<ClubData>();
+  const [clubs, setClubs] = useState<ClubType>();
   const [discussion, setDisscussins] = useState();
 
   const [loadingDiscussions, setLoadingDiscussions] = useState(true);
@@ -111,16 +117,27 @@ const DiscussionList = () => {
       />
       <Container style={{ marginTop: 80 }}>
         {/* <View style={styles.spareter} /> */}
-        <CustomText style={{ textAlign: "left", color: Colors.background }}>
-          Disscussions
-        </CustomText>
-        <CustomFlatList
-          data={discussion}
-          renderItem={renderVerticalItem}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.flatListContainer}
-        />
+        {discussion?.length !== 0 ? (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            Disscussions
+          </CustomText>
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            There is no discussion scheduled yet
+          </CustomText>
+        )}
+
+        {loadingDiscussions ? (
+          <ActivityIndicator size={"large"} />
+        ) : (
+          <CustomFlatList
+            data={discussion}
+            renderItem={renderVerticalItem}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.flatListContainer}
+          />
+        )}
       </Container>
     </View>
   );

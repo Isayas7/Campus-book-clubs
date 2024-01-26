@@ -1,4 +1,13 @@
-import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+  Modal,
+  Button,
+} from "react-native";
 import React, { useContext, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -29,6 +38,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { FIRBASE_DB } from "../firebaseConfig";
+import CustomTouchableOpacity from "./TouchableOpacity/CustomTouchableOpacity";
 
 type ClubDataInfo = {
   clubsId?: string;
@@ -40,7 +50,7 @@ type ClubDataInfo = {
 
 const MessageHeader: React.FC<ClubDataInfo> = (props) => {
   const { user } = useContext(AuthContext);
-  const [hide, setHide] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
   //// Jions clubs
@@ -127,122 +137,116 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
             </View>
 
             {props.from === "message" && (
-              <TouchableOpacity
-                style={{ alignSelf: "flex-end", marginLeft: 10 }}
-                onPress={() => setHide(!hide)}
-              >
-                <Entypo name="dots-three-vertical" size={24} color="white" />
+              <TouchableOpacity>
+                <Entypo
+                  name="dots-three-vertical"
+                  size={26}
+                  color="white"
+                  onPress={() => setVisible(true)}
+                />
               </TouchableOpacity>
             )}
-            {!hide && (
-              <View
-                style={{
-                  position: "absolute",
-                  // width: 90,
-                  top: 63,
-                  right: 10,
-                  backgroundColor: Colors.background,
-                  borderRadius: 10,
-                  paddingVertical: 5,
-                  paddingHorizontal: 8,
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    flexDirection: "row",
-                    marginVertical: 10,
-                    gap: 10,
-                    alignItems: "center",
-                  }}
-                >
-                  <Feather name="message-circle" size={24} color="white" />
-                  <Text
-                    style={styles.text}
-                    onPress={() =>
-                      router.push(`/DiscussionList/${props.clubsId}`)
-                    }
-                  >
-                    Discussions
-                  </Text>
-                </TouchableOpacity>
 
-                {props.id === user?.uid && (
-                  <TouchableOpacity
-                    // onPress={() => router.push(`/(tabs)/account/${id}`)}
-                    style={{
-                      flexDirection: "row",
-                      marginBottom: 10,
-                      gap: 10,
-                      alignItems: "center",
+            <Modal transparent visible={visible}>
+              <TouchableWithoutFeedback onPress={() => setVisible(!visible)}>
+                <View style={{ flex: 1 }}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      console.log("first");
+
+                      setVisible(!visible);
                     }}
                   >
-                    <AntDesign name="adduser" size={24} color="white" />
-                    <Text style={styles.text}>Add members</Text>
-                  </TouchableOpacity>
-                )}
-
-                {props.id === user?.uid ? (
-                  <TouchableOpacity
-                    onPress={() => deleteGroup()}
-                    style={{
-                      flexDirection: "row",
-                      marginBottom: 10,
-                      gap: 10,
-                      alignItems: "center",
-                    }}
-                  >
-                    <AntDesign name="delete" size={24} color="red" />
-                    <Text style={[styles.text, styles.delete]}>
-                      Delete group
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <>
-                    {user &&
-                    props.members !== null &&
-                    props.members?.includes(user?.uid) ? (
-                      <TouchableOpacity
-                        onPress={() => leaveGroup()}
-                        style={{
-                          flexDirection: "row",
-                          marginBottom: 10,
-                          gap: 10,
-                          alignItems: "center",
-                        }}
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 63,
+                        right: 10,
+                        backgroundColor: Colors.background,
+                        borderRadius: 10,
+                        paddingVertical: 5,
+                        paddingHorizontal: 8,
+                      }}
+                    >
+                      <CustomTouchableOpacity
+                        size="small"
+                        onPress={() =>
+                          router.push(`/DiscussionList/${props.clubsId}`)
+                        }
+                        style={styles.lists}
                       >
-                        <AntDesign name="delete" size={20} color="red" />
-                        {loading ? (
-                          <ActivityIndicator />
-                        ) : (
-                          <Text style={[styles.text]}>Leave group</Text>
-                        )}
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        onPress={() => joinClubs()}
-                        style={{
-                          flexDirection: "row",
-                          marginBottom: 10,
-                          gap: 10,
-                          alignItems: "center",
-                        }}
-                      >
-                        <MaterialIcons
-                          name="group-add"
+                        <Feather
+                          name="message-circle"
                           size={24}
                           color="white"
                         />
-                        {loading ? (
-                          <ActivityIndicator />
-                        ) : (
-                          <Text style={[styles.text]}>Join group</Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                  </>
-                )}
-              </View>
-            )}
+                        <Text style={styles.text}>Discussions</Text>
+                      </CustomTouchableOpacity>
+
+                      {props.id === user?.uid && (
+                        <CustomTouchableOpacity
+                          size="small"
+                          // onPress={() => router.push(`/(tabs)/account/${id}`)}
+                          style={styles.lists}
+                        >
+                          <AntDesign name="adduser" size={24} color="white" />
+                          <Text style={styles.text}>Add members</Text>
+                        </CustomTouchableOpacity>
+                      )}
+
+                      {props.id === user?.uid ? (
+                        <CustomTouchableOpacity
+                          size="small"
+                          onPress={() => deleteGroup()}
+                          style={styles.lists}
+                        >
+                          <AntDesign name="delete" size={24} color="red" />
+                          <Text style={[styles.text, styles.delete]}>
+                            Delete group
+                          </Text>
+                        </CustomTouchableOpacity>
+                      ) : (
+                        <>
+                          {user &&
+                          props.members !== null &&
+                          props.members?.includes(user?.uid) ? (
+                            <CustomTouchableOpacity
+                              size="small"
+                              onPress={() => leaveGroup()}
+                              style={styles.lists}
+                            >
+                              <AntDesign name="delete" size={20} color="red" />
+                              {loading ? (
+                                <ActivityIndicator />
+                              ) : (
+                                <Text style={[styles.text]}>Leave group</Text>
+                              )}
+                            </CustomTouchableOpacity>
+                          ) : (
+                            <CustomTouchableOpacity
+                              onPress={() => joinClubs()}
+                              size="small"
+                              style={styles.lists}
+                            >
+                              <MaterialIcons
+                                name="group-add"
+                                size={24}
+                                color="white"
+                              />
+                              {loading ? (
+                                <ActivityIndicator />
+                              ) : (
+                                <Text style={[styles.text]}>Join group</Text>
+                              )}
+                            </CustomTouchableOpacity>
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
           </View>
         </Container>
       </View>
@@ -272,6 +276,13 @@ const styles = StyleSheet.create({
   },
   delete: {
     color: "red",
+  },
+  lists: {
+    flexDirection: "row",
+    marginBottom: 10,
+    gap: 10,
+    alignItems: "center",
+    backgroundColor: Colors.background,
   },
 });
 
