@@ -1,6 +1,5 @@
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity } from "react-native";
 import Colors from "../../../constants/Colors";
 
 const Layout = () => {

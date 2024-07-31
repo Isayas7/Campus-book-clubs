@@ -1,7 +1,7 @@
 import { User, onAuthStateChanged } from "firebase/auth";
 import React, { ReactNode, createContext, useEffect, useState } from "react";
 import { FIRBASE_DB, FIREBASE_AUTH } from "../firebaseConfig";
-import { DocumentData, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { DocumentData, doc, onSnapshot } from "firebase/firestore";
 
 interface AuthContextType {
   user?: User | null;

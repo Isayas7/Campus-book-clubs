@@ -1,11 +1,6 @@
 import React from "react";
 import Colors from "../../constants/Colors";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { widthPercentageToFonts as wf } from "react-native-responsive-screen-font";
 import { CustomTextProps, Size, Variant } from "./types";
 import styled from "styled-components/native";
 

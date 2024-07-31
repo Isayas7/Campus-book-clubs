@@ -2,12 +2,7 @@ import { View, StyleSheet, ActivityIndicator } from "react-native";
 import React, { useContext, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import Colors from "../../../constants/Colors";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
 import { router } from "expo-router";
@@ -48,9 +43,7 @@ const EditProfile = () => {
             const file = new File([blob], fileName, { type: blob.type });
             setFile(file);
           }
-        } catch (error) {
-          console.error("Error creating File object:", error);
-        }
+        } catch (error) {}
       }
     } else {
       alert("You did not select any image.");
@@ -68,12 +61,10 @@ const EditProfile = () => {
         if (photoUrl) {
           const userDoc = doc(FIRBASE_DB, "users", user?.uid);
           await updateDoc(userDoc, { photoUrl: arrayUnion(photoUrl) });
-          console.log("Profile photo uploaded successfully.");
+
           router.push("/(tabs)/account");
         }
-      } catch (error) {
-        console.error("Error uploading profile photo:", error);
-      }
+      } catch (error) {}
       setLoading(false);
     }
   };

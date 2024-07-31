@@ -6,13 +6,12 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
   widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import { StyleSheet } from "react-native";
 import Colors from "../../../constants/Colors";
@@ -34,14 +33,15 @@ import { TextInput } from "react-native-gesture-handler";
 import { AntDesign } from "@expo/vector-icons";
 
 const Home = () => {
-  const [loading, setLoading] = useState(true);
-  const [recommendloading, setRecommendloading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [recommendloading, setRecommendloading] = useState(false);
 
   const [text, setText] = useState<string>();
   const [books, setBooks] = useState<bookType[]>([]);
   const [topViewedBooks, setTopViewedBooks] = useState<bookType[]>([]);
 
   useEffect(() => {
+    setLoading(true);
     const docRef = collection(FIRBASE_DB, "Books");
 
     const unsubscribe = onSnapshot(docRef, (docSnap: DocumentData) => {
@@ -50,19 +50,16 @@ const Home = () => {
         ...doc.data(),
       }));
       setBooks(data);
+      setLoading(false);
     });
 
-    const delayTimer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
     return () => {
-      clearTimeout(delayTimer);
       unsubscribe();
     };
   }, []);
 
   useEffect(() => {
+    setRecommendloading(true);
     const booksCollection = collection(FIRBASE_DB, "Books");
 
     const queryBooks = query(
@@ -78,12 +75,8 @@ const Home = () => {
       }));
 
       setTopViewedBooks(books);
-      const delayTimer = setTimeout(() => {
-        setRecommendloading(false);
-      }, 1000);
-
+      setRecommendloading(false);
       return () => {
-        clearTimeout(delayTimer);
         unsubscribe();
       };
     });
@@ -155,22 +148,13 @@ const Home = () => {
           <AntDesign name="search1" size={24} color={Colors.background} />
         </View>
 
-        {topViewedBooks?.length !== 0 ? (
-          <CustomText variant="black" style={styles.recomendText}>
-            Recommended
-          </CustomText>
-        ) : (
-          books?.length !== 0 && (
-            <CustomText
-              style={{ textAlign: "center", color: Colors.background }}
-            >
-              There is no recommended book for you yet.
-            </CustomText>
-          )
-        )}
-        {books?.length !== 0 && recommendloading ? (
+        <CustomText variant="black" style={styles.recomendText}>
+          Recommended
+        </CustomText>
+
+        {recommendloading ? (
           <ActivityIndicator size={"large"} />
-        ) : (
+        ) : topViewedBooks?.length !== 0 ? (
           <CustomFlatList
             data={topViewedBooks}
             renderItem={renderHorizontaItem}
@@ -179,20 +163,19 @@ const Home = () => {
             contentContainerStyle={styles.flatListContainer}
             horizontal
           />
-        )}
-        {books?.length !== 0 ? (
-          <CustomText variant="black" style={styles.recomendText}>
-            Books
-          </CustomText>
         ) : (
           <CustomText style={{ textAlign: "center", color: Colors.background }}>
-            There is no books
+            There is no recommended book for you yet.
           </CustomText>
         )}
 
+        <CustomText variant="black" style={styles.recomendText}>
+          Books
+        </CustomText>
+
         {loading ? (
           <ActivityIndicator size={"large"} />
-        ) : (
+        ) : books?.length !== 0 ? (
           <CustomFlatList
             data={text ? handleSearch(books) : books}
             renderItem={renderVerticalItem}
@@ -200,6 +183,10 @@ const Home = () => {
             keyExtractor={keyExtractor}
             contentContainerStyle={styles.flatListContainer}
           />
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            There is no books
+          </CustomText>
         )}
       </Container>
     </ScrollView>
@@ -216,8 +203,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   flatListContainer: {
-    // alignItems: "center",
-    // justifyContent: "center",
     gap: 10,
   },
 

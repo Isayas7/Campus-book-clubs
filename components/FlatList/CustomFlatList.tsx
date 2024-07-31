@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, Text } from "react-native";
+import { FlatList } from "react-native";
 import { CustomFlatListProps } from "./type";
 
 const CustomFlatList: React.FC<CustomFlatListProps> = (props) => {

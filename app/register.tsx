@@ -1,11 +1,5 @@
 import React, { useState } from "react";
 import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
-import {
   View,
   StyleSheet,
   Pressable,
@@ -27,6 +21,7 @@ import { doc, setDoc } from "firebase/firestore";
 const Register = () => {
   const { control, handleSubmit, watch } = useForm<userType>();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const repeatPaasword = watch("password");
 
@@ -46,7 +41,8 @@ const Register = () => {
       setLoading(false);
       router.replace("/(tabs)/home");
     } catch (error) {
-      console.error(error);
+      setError("try again");
+      setLoading(false);
     }
   };
 
@@ -92,10 +88,16 @@ const Register = () => {
           placeholder="repeat password"
           secureTextEntry
         />
+        {error && (
+          <CustomText size="small" style={{ color: Colors.color_red_700 }}>
+            try again
+          </CustomText>
+        )}
 
         <CustomTouchableOpacity
           style={styles.button}
           onPress={handleSubmit(Signup)}
+          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator style={{ padding: 5 }} />

@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, StyleSheet, Image, ActivityIndicator } from "react-native";
 import React, { useContext, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomText from "../../../components/Text/CustomText";
@@ -38,7 +31,6 @@ interface PhotosProps {
 
 const Photos: React.FC<PhotosProps> = () => {
   const { data: userData, user, isLoading } = useContext(AuthContext);
-  // const [selectedImage, setSelectedImage] = useState<string>("");
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [file, setFile] = useState<File>();
@@ -68,9 +60,7 @@ const Photos: React.FC<PhotosProps> = () => {
             const file = new File([blob], fileName, { type: blob.type });
             setFile(file);
           }
-        } catch (error) {
-          console.error("Error creating File object:", error);
-        }
+        } catch (error) {}
       }
     } else {
       alert("You did not select any image.");
@@ -88,12 +78,10 @@ const Photos: React.FC<PhotosProps> = () => {
         if (photoUrl) {
           const userDoc = doc(FIRBASE_DB, "users", user?.uid);
           await updateDoc(userDoc, { photoUrl: arrayUnion(photoUrl) });
-          console.log("Profile photo uploaded successfully.");
+
           router.push("/(tabs)/account");
         }
-      } catch (error) {
-        console.error("Error uploading profile photo:", error);
-      }
+      } catch (error) {}
       setLoading(false);
     }
   };
@@ -188,7 +176,6 @@ const styles = StyleSheet.create({
     height: hp("20%"),
     width: hp("20%"),
     borderRadius: 10,
-    // objectFit: "",
   },
   text: {
     color: Colors.background,

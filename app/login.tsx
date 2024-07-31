@@ -1,8 +1,6 @@
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import {
   View,
@@ -27,7 +25,7 @@ import { FIREBASE_AUTH } from "../firebaseConfig";
 const Login = () => {
   const { control, handleSubmit } = useForm<userType>();
   const [loading, setLoading] = useState(false);
-
+  const [error, setError] = useState("");
   const Signin = async (userData: userType) => {
     setLoading(true);
     try {
@@ -40,7 +38,7 @@ const Login = () => {
         router.replace("/(tabs)/home");
       }
     } catch (error) {
-      console.error(error);
+      setError("try again");
     }
     setLoading(false);
   };
@@ -71,8 +69,15 @@ const Login = () => {
           secureTextEntry
           placeholder="password"
         />
-
-        <CustomTouchableOpacity onPress={handleSubmit(Signin)}>
+        {error && (
+          <CustomText size="small" style={{ color: Colors.color_red_700 }}>
+            try again
+          </CustomText>
+        )}
+        <CustomTouchableOpacity
+          disabled={loading}
+          onPress={handleSubmit(Signin)}
+        >
           {loading ? (
             <ActivityIndicator style={{ padding: 5 }} />
           ) : (
@@ -110,15 +115,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: hp("2%"),
     paddingVertical: hp("4%"),
     gap: 8,
-    // height: hp("45%"),
     borderRadius: 15,
   },
   input: {
     borderColor: Colors.background,
   },
-  // button: {
-  //   marginTop: 15,
-  // },
+
   signupConatiner: {
     flexDirection: "row",
     justifyContent: "center",

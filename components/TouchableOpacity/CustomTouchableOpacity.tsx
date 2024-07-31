@@ -1,5 +1,5 @@
 import React from "react";
-import styled, { css } from "styled-components/native";
+import styled from "styled-components/native";
 import { CustomTouchableOpacityProps, Size, Variant } from "./types";
 import Colors from "../../constants/Colors";
 

@@ -6,12 +6,7 @@ import { useForm } from "react-hook-form";
 import Colors from "../../../constants/Colors";
 import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import { AuthContext } from "../../../context/AuthContext";
 import { usenameChangeProps } from "../../../types/types";
 import { FIRBASE_DB } from "../../../firebaseConfig";
@@ -36,10 +31,7 @@ const ChangeUsername = () => {
         });
         setLoading(false);
         router.push("/(tabs)/account");
-        console.log("user updating successfully");
-      } catch (error) {
-        console.error("Error updating user :", error);
-      }
+      } catch (error) {}
     }
   };
 

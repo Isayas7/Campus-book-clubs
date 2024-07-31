@@ -7,13 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import React, {
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { FlatList, TextInput } from "react-native-gesture-handler";
 import { AuthContext } from "../../context/AuthContext";
@@ -34,12 +28,7 @@ import { FIRBASE_DB } from "../../firebaseConfig";
 import Colors from "../../constants/Colors";
 import MessageHeader from "../../components/MessageHeader";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import CustomText from "../../components/Text/CustomText";
 import { ClubType } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -52,17 +41,14 @@ const Message = () => {
   const [messages, setMessages] = useState<DocumentData[]>([]);
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState<boolean>(true);
+  const [messageLoading, setMessageLoading] = useState<boolean>(false);
 
   const flatListRef = useRef<FlatList | null>(null);
 
   const storeData = async () => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
-      console.log("Data stored successfully!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   /// Fetch new messages
@@ -79,17 +65,10 @@ const Message = () => {
       }));
       storeData();
       setMessages(data);
+      setMessageLoading(false);
     });
 
-    const delayTimer = setTimeout(() => {
-      setMessageLoading(false);
-      if (flatListRef.current) {
-        flatListRef.current.scrollToEnd({ animated: true });
-      }
-    }, 200);
-
     return () => {
-      clearTimeout(delayTimer);
       unsubscribe();
     };
   }, [id]);
@@ -101,10 +80,7 @@ const Message = () => {
       await updateDoc(docRef, {
         lastMessage,
       });
-      console.log("last message updating successfully");
-    } catch (error) {
-      console.error("Error updating user :", error);
-    }
+    } catch (error) {}
   };
 
   /// Send Messages
@@ -120,11 +96,7 @@ const Message = () => {
         createdAt: serverTimestamp(),
       });
       lastMessage(message);
-
-      console.log("message sent successfully.");
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
     // if (ref.current) {
     //   ref.current.scrollToEnd({ animated: true });
     // }
@@ -151,11 +123,7 @@ const Message = () => {
         members: arrayUnion(user?.uid),
         member: currentmember + 1,
       });
-
-      console.log("Joined  successfully.");
-    } catch (error) {
-      console.error("Error uploading profile photo:", error);
-    }
+    } catch (error) {}
     setLoading(false);
   };
 

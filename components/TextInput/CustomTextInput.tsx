@@ -5,12 +5,7 @@ import Colors from "../../constants/Colors";
 import { CustomTextInputProps } from "./types";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller } from "react-hook-form";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 
 const InputWrapper = styled.View`
   width: "100%";

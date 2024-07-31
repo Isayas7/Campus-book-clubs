@@ -8,7 +8,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   DocumentData,
   collection,
@@ -22,8 +22,6 @@ import {
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { discussionTypes } from "../../../types/types";
@@ -46,10 +44,7 @@ const DiscussionList = () => {
   const storeData = async () => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
-      console.log("ClubId stored successfully! ", id);
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -79,20 +74,14 @@ const DiscussionList = () => {
     try {
       await AsyncStorage.setItem("@ClubId", `null`);
       router.push(`/(tabs)/account/schedule/${id}`);
-      console.log("Data stored!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   const updateDiscussion = async (did: string) => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
       router.push(`/(tabs)/account/schedule/${did}`);
-      console.log("Data stored!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
   const deleteDiscussion = async () => {
     setDeleteloading(true);
@@ -103,10 +92,7 @@ const DiscussionList = () => {
     try {
       await deleteDoc(discussionDoc);
       setDeleteloading(false);
-      console.log("clubs successfully deleted");
-    } catch (error) {
-      console.log("clubs not deleted");
-    }
+    } catch (error) {}
     setDeleteloading(false);
     setVisible(false);
   };
@@ -281,7 +267,6 @@ const styles = StyleSheet.create({
   booksDesc: {
     display: "flex",
     justifyContent: "center",
-    // gap: 2,
   },
   title: {
     textAlign: "left",

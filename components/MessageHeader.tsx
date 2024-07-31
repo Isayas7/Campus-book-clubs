@@ -6,16 +6,10 @@ import {
   ActivityIndicator,
   TouchableWithoutFeedback,
   Modal,
-  Button,
 } from "react-native";
 import React, { useContext, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { widthPercentageToFonts as wf } from "react-native-responsive-screen-font";
 import CustomText from "./Text/CustomText";
 import Colors from "../constants/Colors";
 import { router } from "expo-router";
@@ -65,11 +59,7 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
         members: arrayUnion(user?.uid),
         member: currentmember + 1,
       });
-
-      console.log("Joined  successfully.");
-    } catch (error) {
-      console.error("Error uploading profile photo:", error);
-    }
+    } catch (error) {}
     setLoading(false);
   };
 
@@ -84,11 +74,7 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
         members: arrayRemove(user?.uid),
         member: currentmember - 1,
       });
-
-      console.log("Joined  successfully.");
-    } catch (error) {
-      console.error("Error uploading profile photo:", error);
-    }
+    } catch (error) {}
     setLoading(false);
   };
 
@@ -96,11 +82,9 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
     const clubDoc = doc(FIRBASE_DB, `Clubs/${props.clubsId}`);
     try {
       await deleteDoc(clubDoc);
-      console.log("clubs successfully deleted");
+
       router.push("/(tabs)/Clubs");
-    } catch (error) {
-      console.log("clubs not deleted");
-    }
+    } catch (error) {}
   };
 
   return (
@@ -152,8 +136,6 @@ const MessageHeader: React.FC<ClubDataInfo> = (props) => {
                 <View style={{ flex: 1 }}>
                   <TouchableWithoutFeedback
                     onPress={() => {
-                      console.log("first");
-
                       setVisible(!visible);
                     }}
                   >

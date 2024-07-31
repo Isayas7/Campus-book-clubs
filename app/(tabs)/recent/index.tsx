@@ -16,7 +16,6 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
   widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import { StatusBar } from "expo-status-bar";
 import Container from "../../../components/container/Container";
@@ -27,9 +26,10 @@ import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 const Recent = () => {
   const { user } = useContext(AuthContext);
   const [recentBooks, setRecentBooks] = useState<bookType>();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     const userRef = doc(FIRBASE_DB, `users/${user?.uid}`);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       const recentReadings = docSnap.data()?.recent || [];
@@ -45,8 +45,8 @@ const Recent = () => {
           (book: string) => book !== null
         );
 
-        setLoading(false);
         setRecentBooks(filteredBooksData);
+        setLoading(false);
       });
     });
 
@@ -75,22 +75,9 @@ const Recent = () => {
       <StatusBar style="light" backgroundColor={Colors.background} />
 
       <Container style={{ gap: 10, marginTop: 12 }}>
-        {recentBooks?.length !== 0 ? (
-          <CustomText
-            size="large"
-            style={{ textAlign: "center", color: Colors.background }}
-          >
-            Your recent reading
-          </CustomText>
-        ) : (
-          <CustomText style={{ textAlign: "center", color: Colors.background }}>
-            You are not read a books yet
-          </CustomText>
-        )}
-
         {loading ? (
           <ActivityIndicator size={"large"} />
-        ) : (
+        ) : recentBooks?.length !== 0 ? (
           <CustomFlatList
             data={recentBooks}
             renderItem={renderVerticalItem}
@@ -98,6 +85,10 @@ const Recent = () => {
             keyExtractor={keyExtractor}
             contentContainerStyle={styles.flatListContainer}
           />
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            You are not read a books yet
+          </CustomText>
         )}
       </Container>
     </ScrollView>
@@ -114,8 +105,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   flatListContainer: {
-    // alignItems: "center",
-    // justifyContent: "center",
     gap: 10,
   },
 

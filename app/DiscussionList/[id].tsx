@@ -21,31 +21,22 @@ import { FIRBASE_DB } from "../../firebaseConfig";
 import Container from "../../components/container/Container";
 import CustomFlatList from "../../components/FlatList/CustomFlatList";
 import Colors from "../../constants/Colors";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen-font";
 import CustomText from "../../components/Text/CustomText";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "react-native";
-import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 
 const DiscussionList = () => {
   const { id } = useLocalSearchParams();
   const [clubs, setClubs] = useState<ClubType>();
   const [discussion, setDisscussins] = useState();
 
-  const [loadingDiscussions, setLoadingDiscussions] = useState(true);
+  const [loadingDiscussions, setLoadingDiscussions] = useState(false);
 
   const storeData = async () => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
-      console.log("Data stored successfully!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   /// Fetch Clubs Data
@@ -116,7 +107,6 @@ const DiscussionList = () => {
         }}
       />
       <Container style={{ marginTop: 80 }}>
-        {/* <View style={styles.spareter} /> */}
         {discussion?.length !== 0 ? (
           <CustomText style={{ textAlign: "center", color: Colors.background }}>
             Disscussions
@@ -157,7 +147,6 @@ const styles = StyleSheet.create({
   booksDesc: {
     display: "flex",
     justifyContent: "center",
-    // gap: 2,
   },
   title: {
     textAlign: "left",
@@ -171,8 +160,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   flatListContainer: {
-    // alignItems: "center",
-    // justifyContent: "center",
     gap: 10,
   },
   groupImage: {

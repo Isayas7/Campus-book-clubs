@@ -5,8 +5,6 @@ import { View } from "react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import Colors from "../../../constants/Colors";
 import Container from "../../../components/container/Container";
@@ -14,8 +12,6 @@ import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
 import {
   DocumentData,
-  arrayRemove,
-  arrayUnion,
   doc,
   getDoc,
   onSnapshot,
@@ -29,10 +25,11 @@ import { AuthContext } from "../../../context/AuthContext";
 const Id = () => {
   const { id } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [book, setBook] = useState<bookType>();
 
   useEffect(() => {
+    setLoading(true);
     const clubRef = doc(FIRBASE_DB, `Books/${id}`);
     const unsubscribe = onSnapshot(clubRef, (docSnap: DocumentData) => {
       setBook({ id: docSnap.id, ...docSnap.data() });
@@ -59,20 +56,16 @@ const Id = () => {
         ];
         try {
           await updateDoc(docRef, { recent: updatedRecentArray });
-          console.log("Recent array updated successfully");
+
           await increaseView();
-        } catch (error) {
-          console.log(error);
-        }
+        } catch (error) {}
       } else {
         const updatedRecentArray = [book?.id, ...recentArray];
         try {
           await updateDoc(docRef, { recent: updatedRecentArray });
-          console.log("Recent array added successfully");
+
           await increaseView();
-        } catch (error) {
-          console.log(error);
-        }
+        } catch (error) {}
       }
     }
   };
@@ -83,19 +76,13 @@ const Id = () => {
     const currentViews = bookDoc.data()?.view || 0;
     try {
       await updateDoc(bookDocRef, { view: currentViews + 1 });
-      console.log("view updated successfully");
-    } catch (error) {
-      console.log("view not updated successfully");
-    }
+    } catch (error) {}
   };
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       {loading ? (
-        <ActivityIndicator
-          size={"large"}
-          // style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        />
+        <ActivityIndicator size={"large"} />
       ) : (
         <Container style={styles.container}>
           <View style={styles.wrapper}>

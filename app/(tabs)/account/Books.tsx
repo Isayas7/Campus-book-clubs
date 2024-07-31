@@ -3,8 +3,6 @@ import {
   Text,
   StyleSheet,
   Image,
-  Pressable,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Modal,
@@ -16,13 +14,11 @@ import CustomText from "../../../components/Text/CustomText";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import Colors from "../../../constants/Colors";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
 import { router } from "expo-router";
-import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
 import CustomFlatList from "../../../components/FlatList/CustomFlatList";
 import { AuthContext } from "../../../context/AuthContext";
 import {
@@ -41,8 +37,7 @@ import { bookType } from "../../../types/types";
 
 const Books = () => {
   const [books, setBooks] = useState<bookType[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(false);
 
   const [visible, setVisible] = useState(false);
   const [deleteId, setDeleteId] = useState<string>();
@@ -50,6 +45,7 @@ const Books = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
+    setLoading(true);
     const q = query(
       collection(FIRBASE_DB, "Books"),
       where("creater", "==", user?.uid),
@@ -71,20 +67,14 @@ const Books = () => {
     try {
       await AsyncStorage.setItem("@bookId", `null`);
       router.push(`/(tabs)/account/UploadBook`);
-      console.log("Data stored!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   const updateBook = async (id: string) => {
     try {
       await AsyncStorage.setItem("@bookId", `${id}`);
       router.push(`/(tabs)/account/UploadBook`);
-      console.log("Data stored!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   const deletebook = async () => {
@@ -94,10 +84,7 @@ const Books = () => {
     try {
       await deleteDoc(bookDoc);
       setDeleteloading(false);
-      console.log("book successfully deleted");
-    } catch (error) {
-      console.log("book not deleted");
-    }
+    } catch (error) {}
     setDeleteloading(false);
     setVisible(false);
   };

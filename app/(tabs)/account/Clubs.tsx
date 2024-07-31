@@ -3,8 +3,6 @@ import {
   Text,
   StyleSheet,
   Image,
-  Pressable,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Modal,
@@ -16,8 +14,6 @@ import CustomText from "../../../components/Text/CustomText";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import Colors from "../../../constants/Colors";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
@@ -41,13 +37,14 @@ import { ClubType } from "../../../types/types";
 
 const Clubs = () => {
   const [clubs, setClubs] = useState<ClubType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [deleteId, setDeleteId] = useState<string>();
   const [deleteloading, setDeleteloading] = useState(false);
-  const { data: userData, user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
+    setLoading(true);
     const q = query(
       collection(FIRBASE_DB, "Clubs"),
       where("creater", "==", user?.uid),
@@ -70,20 +67,14 @@ const Clubs = () => {
     try {
       await AsyncStorage.setItem("@ClubId", `null`);
       router.push(`/(tabs)/account/CreateClub`);
-      console.log("Data stored!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   const updateGroup = async (id: string) => {
     try {
       await AsyncStorage.setItem("@ClubId", `${id}`);
       router.push(`/(tabs)/account/CreateClub`);
-      console.log("Data stored!");
-    } catch (error) {
-      console.error("Error storing data:", error);
-    }
+    } catch (error) {}
   };
 
   const deleteGroup = async () => {
@@ -93,10 +84,7 @@ const Clubs = () => {
     try {
       await deleteDoc(clubDoc);
       setDeleteloading(false);
-      console.log("clubs successfully deleted");
-    } catch (error) {
-      console.log("book not deleted");
-    }
+    } catch (error) {}
     setDeleteloading(false);
     setVisible(false);
   };
@@ -118,7 +106,6 @@ const Clubs = () => {
   const keyExtractor = (item: ClubType, index: number) => item.id.toString();
 
   const renderVerticalItem = ({ item }: { item: ClubType }) => {
-    console.log("item2", item);
     return (
       <View
         style={{

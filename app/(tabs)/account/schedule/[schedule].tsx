@@ -51,9 +51,7 @@ const ScheduleDiscussion = () => {
   const retrieveData = async () => {
     try {
       clubId = (await AsyncStorage?.getItem("@ClubId")) || "";
-    } catch (error) {
-      console.error("Error retrieving data:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -109,9 +107,7 @@ const ScheduleDiscussion = () => {
             const file = new File([blob], fileName, { type: blob.type });
             setFile(file);
           }
-        } catch (error) {
-          console.error("Error creating File object:", error);
-        }
+        } catch (error) {}
       }
     } else {
       alert("You did not select any image.");
@@ -137,14 +133,10 @@ const ScheduleDiscussion = () => {
           collection(FIRBASE_DB, `Clubs/${id}/discussions`),
           RequestData
         );
-        console.log("discussions created successfully.");
         setLoading(false);
         router.push(`/(tabs)/account/${id}`);
       }
-    } catch (error) {
-      console.log("discussions not created ");
-      console.error(error);
-    }
+    } catch (error) {}
   };
 
   const updateDiscussion = async (data: discussionTypes) => {
@@ -164,11 +156,10 @@ const ScheduleDiscussion = () => {
           ...data,
           photoURL,
         });
-        console.log("discussion successfully updated");
+
         setLoading(false);
         router.push(`/(tabs)/account/${clubId}`);
       } catch (error) {
-        console.log("discussions not updated");
         setLoading(false);
       }
     } else {
@@ -180,11 +171,10 @@ const ScheduleDiscussion = () => {
 
       try {
         await updateDoc(discussionDoc, data);
-        console.log("discussions successfully updated");
+
         setLoading(false);
         router.push(`/(tabs)/account/${clubId}`);
       } catch (error) {
-        console.log("discussions not updated");
         setLoading(false);
       }
     }

@@ -3,7 +3,6 @@ import {
   Text,
   ScrollView,
   Image,
-  Pressable,
   ActivityIndicator,
   TouchableOpacity,
   TextInput,
@@ -13,8 +12,6 @@ import { StatusBar } from "expo-status-bar";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
 } from "react-native-responsive-screen-font";
 import { StyleSheet } from "react-native";
 import Colors from "../../../constants/Colors";
@@ -30,7 +27,6 @@ import {
   onSnapshot,
   orderBy,
   query,
-  where,
 } from "firebase/firestore";
 import { FIRBASE_DB } from "../../../firebaseConfig";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
@@ -40,11 +36,12 @@ const Clubs = () => {
   const { user } = useContext(AuthContext);
   const [clubs, setClubs] = useState<bookType[]>([]);
   const [topClubs, setTopClubs] = useState<bookType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [recommendloading, setRecommendloading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [recommendloading, setRecommendloading] = useState(false);
   const [text, setText] = useState<string>();
 
   useEffect(() => {
+    setLoading(true);
     const docRef = collection(FIRBASE_DB, "Clubs");
 
     const unsubscribe = onSnapshot(docRef, (docSnap: DocumentData) => {
@@ -53,12 +50,14 @@ const Clubs = () => {
         ...doc.data(),
       }));
       setClubs(data);
+      setLoading(false);
     });
-    setLoading(false);
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
+    setRecommendloading(true);
+
     const clubCollection = collection(FIRBASE_DB, "Clubs");
 
     const queryBooks = query(
@@ -74,8 +73,8 @@ const Clubs = () => {
       }));
 
       setTopClubs(clubs);
+      setRecommendloading(false);
     });
-    setRecommendloading(false);
     return () => unsubscribe();
   }, []);
 
@@ -157,23 +156,14 @@ const Clubs = () => {
           />
           <AntDesign name="search1" size={24} color={Colors.background} />
         </View>
-        {topClubs?.length !== 0 ? (
-          <CustomText variant="black" style={styles.recomendText}>
-            Recommended
-          </CustomText>
-        ) : (
-          clubs?.length !== 0 && (
-            <CustomText
-              style={{ textAlign: "center", color: Colors.background }}
-            >
-              There is no recommended club for you yet.
-            </CustomText>
-          )
-        )}
+
+        <CustomText variant="black" style={styles.recomendText}>
+          Recommended
+        </CustomText>
 
         {recommendloading ? (
           <ActivityIndicator size={"large"} />
-        ) : (
+        ) : clubs?.length !== 0 ? (
           <CustomFlatList
             data={topClubs}
             renderItem={renderHorizontaItem}
@@ -182,20 +172,19 @@ const Clubs = () => {
             contentContainerStyle={styles.flatListContainer}
             horizontal
           />
-        )}
-        {clubs?.length !== 0 ? (
-          <CustomText variant="black" style={styles.recomendText}>
-            Clubs
-          </CustomText>
         ) : (
           <CustomText style={{ textAlign: "center", color: Colors.background }}>
-            There is no clubs
+            There is no recommended club for you yet.
           </CustomText>
         )}
 
+        <CustomText variant="black" style={styles.recomendText}>
+          Clubs
+        </CustomText>
+
         {loading ? (
           <ActivityIndicator size={"large"} />
-        ) : (
+        ) : clubs?.length !== 0 ? (
           <CustomFlatList
             data={text ? handleSearch(clubs) : clubs}
             renderItem={renderVerticalItem}
@@ -203,6 +192,10 @@ const Clubs = () => {
             keyExtractor={keyExtractor}
             contentContainerStyle={styles.flatListContainer}
           />
+        ) : (
+          <CustomText style={{ textAlign: "center", color: Colors.background }}>
+            There is no clubs
+          </CustomText>
         )}
       </Container>
     </ScrollView>
@@ -219,8 +212,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   flatListContainer: {
-    // alignItems: "center",
-    // justifyContent: "center",
     gap: 10,
   },
 
@@ -242,7 +233,6 @@ const styles = StyleSheet.create({
   booksDesc: {
     display: "flex",
     justifyContent: "center",
-    // gap: 2,
   },
   title: {
     textAlign: "left",

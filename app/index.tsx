@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { AuthContext } from "../context/AuthContext";
 import { ActivityIndicator } from "react-native";
 

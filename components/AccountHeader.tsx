@@ -1,13 +1,8 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
 import React, { useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import CustomText from "./Text/CustomText";
 import CustomTouchableOpacity from "./TouchableOpacity/CustomTouchableOpacity";
 import Colors from "../constants/Colors";
@@ -31,7 +26,9 @@ const AccountHeader = () => {
             borderRadius: 200,
           }}
         >
-          {data?.photoUrl.slice(-1)[0] ? (
+          {isLoading ? (
+            <ActivityIndicator size={"small"} />
+          ) : data?.photoUrl.slice(-1)[0] ? (
             <Image
               style={styles.image}
               source={{ uri: data?.photoUrl.slice(-1)[0] }}

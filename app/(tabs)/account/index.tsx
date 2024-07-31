@@ -36,6 +36,9 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 const Settings = () => {
   const { isLoading, data, user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
+  const [booksLoading, setBooksLoading] = useState(false);
+  const [clubsLoading, setClubsLoading] = useState(false);
+
   const [books, setBooks] = useState<bookType[]>([]);
   const [clubs, setClubs] = useState<ClubType[]>([]);
 
@@ -44,13 +47,12 @@ const Settings = () => {
     try {
       await signOut(FIREBASE_AUTH);
       router.replace("/login");
-    } catch (error) {
-      console.error(error);
-    }
+    } catch (error) {}
     setLoading(false);
   };
 
   useEffect(() => {
+    setBooksLoading(true);
     const bookQuery = query(
       collection(FIRBASE_DB, "Books"),
       where("creater", "==", user?.uid)
@@ -62,8 +64,16 @@ const Settings = () => {
         ...doc.data(),
       }));
       setBooks(data);
+      setBooksLoading(false);
     });
 
+    return () => {
+      booksData();
+    };
+  }, []);
+
+  useEffect(() => {
+    setClubsLoading(true);
     const clubQuery = query(
       collection(FIRBASE_DB, "Clubs"),
       where("creater", "==", user?.uid)
@@ -75,14 +85,13 @@ const Settings = () => {
         ...doc.data(),
       }));
       setClubs(data);
+      setClubsLoading(false);
     });
 
     return () => {
-      booksData();
       clubData();
     };
   }, []);
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.newBackground }}>
       <Container>
@@ -96,12 +105,16 @@ const Settings = () => {
         <View style={styles.cardContiner}>
           <Card style={{ width: wp("29%") }}>
             <TouchableOpacity
-              onPress={() => router.push("/(tabs)/account/clubs")}
+              onPress={() => router.push("/(tabs)/account/Clubs")}
             >
               <CustomText style={styles.cardHeader}>Clubs</CustomText>
-              <CustomText size="large" style={styles.cardNumber}>
-                {clubs?.length}
-              </CustomText>
+              {clubsLoading ? (
+                <ActivityIndicator size={"small"} />
+              ) : (
+                <CustomText size="large" style={styles.cardNumber}>
+                  {clubs?.length}
+                </CustomText>
+              )}
             </TouchableOpacity>
           </Card>
 
@@ -110,9 +123,13 @@ const Settings = () => {
               onPress={() => router.push("/(tabs)/account/Books")}
             >
               <CustomText style={styles.cardHeader}>Books</CustomText>
-              <CustomText size="large" style={styles.cardNumber}>
-                {books?.length}
-              </CustomText>
+              {booksLoading ? (
+                <ActivityIndicator size={"small"} />
+              ) : (
+                <CustomText size="large" style={styles.cardNumber}>
+                  {books?.length}
+                </CustomText>
+              )}
             </TouchableOpacity>
           </Card>
 
@@ -121,9 +138,13 @@ const Settings = () => {
               onPress={() => router.push("/(tabs)/account/Photos")}
             >
               <CustomText style={styles.cardHeader}>Photos</CustomText>
-              <CustomText size="large" style={styles.cardNumber}>
-                {data?.photoUrl.length}
-              </CustomText>
+              {isLoading ? (
+                <ActivityIndicator size={"small"} />
+              ) : (
+                <CustomText size="large" style={styles.cardNumber}>
+                  {data?.photoUrl.length}
+                </CustomText>
+              )}
             </TouchableOpacity>
           </Card>
         </View>

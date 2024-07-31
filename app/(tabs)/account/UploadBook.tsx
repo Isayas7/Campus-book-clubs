@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomTextInput from "../../../components/TextInput/CustomTextInput";
@@ -6,12 +6,7 @@ import { useForm } from "react-hook-form";
 import Colors from "../../../constants/Colors";
 import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
@@ -52,9 +47,7 @@ const UploadBook = () => {
   const retrieveData = async () => {
     try {
       bookId = (await AsyncStorage?.getItem("@bookId")) || "";
-    } catch (error) {
-      console.error("Error retrieving data:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -96,9 +89,7 @@ const UploadBook = () => {
           const file = new File([blob], fileName, { type: blob.type });
           setBlobPdfFile(file);
         }
-      } catch (error) {
-        console.error("Error creating File object:", error);
-      }
+      } catch (error) {}
     }
   };
 
@@ -123,9 +114,7 @@ const UploadBook = () => {
           const file = new File([blob], fileName, { type: blob.type });
           setBlobImgFile(file);
         }
-      } catch (error) {
-        console.error("Error creating File object:", error);
-      }
+      } catch (error) {}
     } else {
       alert("You did not select any image.");
     }
@@ -158,14 +147,10 @@ const UploadBook = () => {
       };
       if (photoURL && pdfURL) {
         await addDoc(collection(FIRBASE_DB, "Books"), RequestData);
-        console.log("books created successfully.");
         setLoading(false);
         router.push("/(tabs)/account/Books");
       }
-    } catch (error) {
-      console.log("Books not created ");
-      console.error(error);
-    }
+    } catch (error) {}
   };
 
   const updateBook = async (data: bookType) => {
@@ -187,11 +172,10 @@ const UploadBook = () => {
           photoURL,
           pdfURL,
         });
-        console.log("books successfully updated");
+
         setLoading(false);
         router.push("/(tabs)/account/Books");
       } catch (error) {
-        console.log("books not updated");
         setLoading(false);
       }
     } else if (blobImgFile) {
@@ -207,11 +191,10 @@ const UploadBook = () => {
           ...data,
           photoURL,
         });
-        console.log("books successfully updated");
+
         setLoading(false);
         router.push("/(tabs)/account/Books");
       } catch (error) {
-        console.log("books not updated");
         setLoading(false);
       }
     } else if (blobPdfFile) {
@@ -230,11 +213,10 @@ const UploadBook = () => {
           ...data,
           pdfURL,
         });
-        console.log("books successfully updated");
+
         setLoading(false);
         router.push("/(tabs)/account/Books");
       } catch (error) {
-        console.log("books not updated");
         setLoading(false);
       }
     } else {
@@ -242,11 +224,10 @@ const UploadBook = () => {
       const bookDoc = doc(FIRBASE_DB, "Books", bookId);
       try {
         await updateDoc(bookDoc, data);
-        console.log("books successfully updated");
+
         setLoading(false);
         router.push("/(tabs)/account/Books");
       } catch (error) {
-        console.log("books not updated");
         setLoading(false);
       }
     }

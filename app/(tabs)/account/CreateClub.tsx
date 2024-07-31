@@ -12,12 +12,7 @@ import { useForm } from "react-hook-form";
 import Colors from "../../../constants/Colors";
 import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import { router } from "expo-router";
 import { AuthContext } from "../../../context/AuthContext";
 import * as ImagePicker from "expo-image-picker";
@@ -39,8 +34,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const CreateClub = () => {
   const { user } = useContext(AuthContext);
   const [clubs, setClubs] = useState<ClubType>();
+  const [error, setError] = useState("");
 
-  // const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [file, setFile] = useState<File>();
@@ -53,9 +48,7 @@ const CreateClub = () => {
   const retrieveData = async () => {
     try {
       clubId = (await AsyncStorage?.getItem("@ClubId")) || "";
-    } catch (error) {
-      console.error("Error retrieving data:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -101,9 +94,7 @@ const CreateClub = () => {
             const file = new File([blob], fileName, { type: blob.type });
             setFile(file);
           }
-        } catch (error) {
-          console.error("Error creating File object:", error);
-        }
+        } catch (error) {}
       }
     } else {
       alert("You did not select any image.");
@@ -126,13 +117,12 @@ const CreateClub = () => {
       };
       if (photoURL) {
         await addDoc(collection(FIRBASE_DB, "Clubs"), RequestData);
-        console.log("clubs created successfully.");
+
         setLoading(false);
         router.push("/(tabs)/account/clubs");
       }
     } catch (error) {
-      console.log("clubs not created ");
-      console.error(error);
+      setError("try again");
     }
   };
 
@@ -151,11 +141,10 @@ const CreateClub = () => {
           about: data.about,
           clubName: data.clubName,
         });
-        console.log("clubs successfully updated");
+
         setLoading(false);
         router.push("/(tabs)/account/clubs");
       } catch (error) {
-        console.log("clubs not updated");
         setLoading(false);
       }
     } else {
@@ -166,11 +155,10 @@ const CreateClub = () => {
           about: data.about,
           clubName: data.clubName,
         });
-        console.log("clubs successfully updated");
+
         setLoading(false);
         router.push("/(tabs)/account/clubs");
       } catch (error) {
-        console.log("clubs not updated");
         setLoading(false);
       }
     }
@@ -201,9 +189,6 @@ const CreateClub = () => {
             <ImageViewer
               selectedImage={selectedImage ? selectedImage : clubs?.photoURL}
             />
-            {/* <ImageViewer
-              selectedImage={selectedImage ?? clubs?.photoURL ?? ""}
-            /> */}
           </TouchableOpacity>
         </View>
 

@@ -1,8 +1,7 @@
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
 import Colors from "../../../constants/Colors";
-import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import CustomText from "../../../components/Text/CustomText";
+
 import { Ionicons } from "@expo/vector-icons";
 
 const Layout = () => {

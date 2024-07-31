@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import React, { useContext, useState } from "react";
 import Container from "../../../components/container/Container";
 import CustomTextInput from "../../../components/TextInput/CustomTextInput";
@@ -6,12 +6,7 @@ import { useForm } from "react-hook-form";
 import Colors from "../../../constants/Colors";
 import CustomText from "../../../components/Text/CustomText";
 import CustomTouchableOpacity from "../../../components/TouchableOpacity/CustomTouchableOpacity";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import { AuthContext } from "../../../context/AuthContext";
 import { passwordChangeProps } from "../../../types/types";
 import { doc, updateDoc } from "firebase/firestore";
@@ -34,9 +29,7 @@ const ChangePassword = () => {
   //       });
   //       setLoading(false);
   //       router.push("/(tabs)/account");
-  //       console.log("user updating successfully");
   //     } catch (error) {
-  //       console.error("Error updating user :", error);
   //     }
   //   }
   // };
@@ -85,7 +78,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 25,
-    // justifyContent: "center",
     marginTop: hp("7%"),
   },
   text: {

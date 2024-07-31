@@ -23,17 +23,11 @@ import { FIRBASE_DB } from "../../firebaseConfig";
 import { ClubType } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-  widthPercentageToFonts as wf,
-  heightPercentageToFonts as hf,
-} from "react-native-responsive-screen-font";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen-font";
 import Colors from "../../constants/Colors";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { TextInput } from "react-native-gesture-handler";
 import { AuthContext } from "../../context/AuthContext";
-import CustomText from "../../components/Text/CustomText";
 import { StyleSheet } from "react-native";
 
 const DiscussionForum = () => {
@@ -41,7 +35,7 @@ const DiscussionForum = () => {
 
   const { id } = useLocalSearchParams();
   const [clubs, setClubs] = useState<ClubType>();
-  const [messageLoading, setMessageLoading] = useState<boolean>(true);
+  const [messageLoading, setMessageLoading] = useState<boolean>(false);
   const [messages, setMessages] = useState<DocumentData[]>([]);
   const [message, setMessage] = useState<string>("");
 
@@ -51,10 +45,7 @@ const DiscussionForum = () => {
   const retrieveData = async () => {
     try {
       storedData = (await AsyncStorage?.getItem("@ClubId")) || "";
-      console.log("ClubId  retrieved successfully! ", storedData);
-    } catch (error) {
-      console.error("Error retrieving data:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -74,17 +65,10 @@ const DiscussionForum = () => {
           ...doc.data(),
         }));
         setMessages(data);
+        setMessageLoading(false);
       });
 
-      const delayTimer = setTimeout(() => {
-        setMessageLoading(false);
-        if (flatListRef.current) {
-          flatListRef.current.scrollToEnd({ animated: true });
-        }
-      }, 200);
-
       return () => {
-        clearTimeout(delayTimer);
         unsubscribe();
       };
     };
@@ -105,11 +89,7 @@ const DiscussionForum = () => {
         sender: user?.uid,
         createdAt: serverTimestamp(),
       });
-
-      console.log("message sent successfully.");
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
     // if (ref.current) {
     //   ref.current.scrollToEnd({ animated: true });
     // }
